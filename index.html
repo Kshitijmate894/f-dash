@@ -8,446 +8,109 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --card: #21262d;
-    --border: #30363d;
-    --border-light: #21262d;
-    --green: #3fb950;
-    --green-dim: #1a4226;
-    --red: #f85149;
-    --red-dim: #3d1c1c;
-    --amber: #d29922;
-    --blue: #58a6ff;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --muted2: #6e7681;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Inter', sans-serif;
+    --bg: #0d1117; --surface: #161b22; --card: #21262d;
+    --border: #30363d; --border-light: #21262d;
+    --green: #3fb950; --green-dim: #1a4226;
+    --red: #f85149; --red-dim: #3d1c1c;
+    --amber: #d29922; --blue: #58a6ff;
+    --text: #e6edf3; --muted: #8b949e; --muted2: #6e7681;
+    --mono: 'IBM Plex Mono', monospace; --sans: 'Inter', sans-serif;
   }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: -0.02em;
-  }
-
-  .logo-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .status-badge {
-    font-size: 11px;
-    font-family: var(--mono);
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-
-  .status-badge.live {
-    color: var(--green);
-    border-color: var(--green-dim);
-    background: var(--green-dim);
-  }
-
-  main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
-
-  /* ─── Setup Panel ─── */
-  .setup-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 24px;
-    margin-bottom: 28px;
-  }
-
-  .setup-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
-  .setup-grid {
-    display: grid;
-    grid-template-columns: 2fr 2fr 1fr auto;
-    gap: 10px;
-    align-items: end;
-  }
-
-  .field label {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 5px;
-    font-family: var(--mono);
-    letter-spacing: 0.04em;
-  }
-
-  .field input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    padding: 8px 12px;
-    font-family: var(--mono);
-    font-size: 12px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-
-  .field input:focus { border-color: var(--blue); }
-  .field input::placeholder { color: var(--muted2); }
-
-  .btn-load {
-    background: var(--green);
-    color: #0d1117;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 18px;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    white-space: nowrap;
-    height: 36px;
-  }
-
-  .btn-load:hover { opacity: 0.85; }
-  .btn-load:active { transform: scale(0.97); }
-  .btn-load:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .setup-hint {
-    margin-top: 10px;
-    font-size: 11px;
-    color: var(--muted2);
-    line-height: 1.6;
-  }
-
-  .setup-hint a { color: var(--blue); text-decoration: none; }
-  .setup-hint a:hover { text-decoration: underline; }
-
-  /* ─── Error / Loading ─── */
-  .message {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 24px;
-  }
-
-  .message.error {
-    border-color: var(--red-dim);
-    background: var(--red-dim);
-    color: var(--red);
-  }
-
-  /* ─── Year Filter ─── */
-  .controls-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .filter-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .filter-label {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: var(--mono);
-    letter-spacing: 0.04em;
-    margin-right: 4px;
-  }
-
-  .year-btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    color: var(--muted);
-    padding: 4px 10px;
-    font-size: 12px;
-    font-family: var(--mono);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .year-btn:hover { border-color: var(--green); color: var(--green); }
-  .year-btn.active {
-    background: var(--green-dim);
-    border-color: var(--green);
-    color: var(--green);
-    font-weight: 500;
-  }
-
-  .last-updated {
-    font-size: 11px;
-    color: var(--muted2);
-    font-family: var(--mono);
-  }
-
-  /* ─── KPI Cards ─── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-
-  .kpi-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 18px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-
-  .kpi-card.green::before { background: var(--green); }
-  .kpi-card.red::before { background: var(--red); }
-  .kpi-card.blue::before { background: var(--blue); }
-  .kpi-card.amber::before { background: var(--amber); }
-
-  .kpi-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-    margin-bottom: 8px;
-  }
-
-  .kpi-value {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-  }
-
-  .kpi-card.green .kpi-value { color: var(--green); }
-  .kpi-card.red .kpi-value { color: var(--red); }
-  .kpi-card.blue .kpi-value { color: var(--blue); }
-  .kpi-card.amber .kpi-value { color: var(--amber); }
-
-  .kpi-sub {
-    font-size: 11px;
-    color: var(--muted2);
-    margin-top: 4px;
-    font-family: var(--mono);
-  }
-
-  /* ─── Charts Grid ─── */
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .charts-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-  }
-
-  .chart-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .chart-title {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--muted);
-  }
-
-  .chart-meta {
-    font-size: 11px;
-    color: var(--muted2);
-    font-family: var(--mono);
-  }
-
-  .chart-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  .canvas-wrap { position: relative; width: 100%; }
-
-  /* ─── Data Table ─── */
-  .table-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 16px;
-  }
-
-  .table-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--muted);
-  }
-
-  .table-scroll { overflow-x: auto; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--mono);
-    font-size: 12px;
-  }
-
-  thead th {
-    background: var(--card);
-    color: var(--muted);
-    padding: 8px 12px;
-    text-align: right;
-    font-weight: 500;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  thead th:first-child, thead th:nth-child(2) { text-align: left; }
-
-  tbody tr {
-    border-bottom: 1px solid var(--border-light);
-    transition: background 0.1s;
-  }
-
-  tbody tr:hover { background: var(--card); }
-
-  tbody td {
-    padding: 7px 12px;
-    text-align: right;
-    color: var(--text);
-    white-space: nowrap;
-  }
-
-  tbody td:first-child, tbody td:nth-child(2) {
-    text-align: left;
-    color: var(--muted);
-  }
-
-  .pos { color: var(--green); }
-  .neg { color: var(--red); }
-  .amt { color: var(--text); }
-
-  #dashboard { display: none; }
-
-  @media (max-width: 900px) {
-    main { padding: 16px; }
-    .setup-grid { grid-template-columns: 1fr 1fr; }
-    .setup-grid .btn-load { grid-column: 1 / -1; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .charts-grid { grid-template-columns: 1fr; }
-    .charts-row { grid-template-columns: 1fr; }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; min-height:100vh; line-height:1.5; }
+ 
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; display:flex; align-items:center; justify-content:space-between; height:56px; position:sticky; top:0; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:600; font-size:15px; letter-spacing:-0.02em; }
+  .logo-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .status-badge { font-size:11px; font-family:var(--mono); padding:3px 8px; border-radius:4px; background:var(--card); border:1px solid var(--border); color:var(--muted); }
+  .status-badge.live { color:var(--green); border-color:var(--green-dim); background:var(--green-dim); }
+ 
+  main { padding:28px 32px; max-width:1400px; margin:0 auto; }
+ 
+  /* Setup */
+  .setup-panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:24px; padding:0; }
+  .setup-grid { display:grid; grid-template-columns:2fr 2fr 1fr auto; gap:10px; align-items:end; }
+  .field label { display:block; font-size:11px; color:var(--muted); margin-bottom:5px; font-family:var(--mono); letter-spacing:0.04em; }
+  .field input { width:100%; background:var(--card); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:8px 12px; font-family:var(--mono); font-size:12px; outline:none; transition:border-color 0.15s; }
+  .field input:focus { border-color:var(--blue); }
+  .field input::placeholder { color:var(--muted2); }
+  .btn-load { background:var(--green); color:#0d1117; border:none; border-radius:6px; padding:8px 18px; font-weight:600; font-size:13px; cursor:pointer; transition:opacity 0.15s,transform 0.1s; white-space:nowrap; height:36px; }
+  .btn-load:hover { opacity:0.85; } .btn-load:active { transform:scale(0.97); } .btn-load:disabled { opacity:0.4; cursor:not-allowed; }
+  .setup-hint { font-size:11px; color:var(--muted2); line-height:1.6; flex:1; min-width:200px; }
+  .setup-hint a { color:var(--blue); text-decoration:none; } .setup-hint a:hover { text-decoration:underline; }
+ 
+  /* Messages */
+  .message { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; text-align:center; color:var(--muted); font-size:13px; margin-bottom:24px; }
+  .message.error { border-color:var(--red-dim); background:var(--red-dim); color:var(--red); }
+ 
+  /* Filter bars */
+  .controls-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .filter-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .filter-label { font-size:11px; color:var(--muted); font-family:var(--mono); letter-spacing:0.04em; margin-right:2px; }
+  .filter-btn { background:var(--card); border:1px solid var(--border); border-radius:5px; color:var(--muted); padding:4px 10px; font-size:12px; font-family:var(--mono); cursor:pointer; transition:all 0.15s; }
+  .filter-btn:hover { border-color:var(--green); color:var(--green); }
+  .filter-btn.active { background:var(--green-dim); border-color:var(--green); color:var(--green); font-weight:500; }
+  .last-updated { font-size:11px; color:var(--muted2); font-family:var(--mono); }
+ 
+  /* Chart time range bar */
+  .range-bar { display:flex; align-items:center; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .range-btn { background:var(--card); border:1px solid var(--border); border-radius:4px; color:var(--muted2); padding:3px 9px; font-size:11px; font-family:var(--mono); cursor:pointer; transition:all 0.12s; }
+  .range-btn:hover { color:var(--blue); border-color:var(--blue); }
+  .range-btn.active { background:rgba(88,166,255,0.12); border-color:var(--blue); color:var(--blue); font-weight:500; }
+ 
+  /* KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .kpi-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 18px; position:relative; overflow:hidden; }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .kpi-card.green::before { background:var(--green); } .kpi-card.red::before { background:var(--red); }
+  .kpi-card.blue::before { background:var(--blue); } .kpi-card.amber::before { background:var(--amber); }
+  .kpi-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:500; margin-bottom:8px; }
+  .kpi-value { font-family:var(--mono); font-size:22px; font-weight:500; letter-spacing:-0.01em; }
+  .kpi-card.green .kpi-value { color:var(--green); } .kpi-card.red .kpi-value { color:var(--red); }
+  .kpi-card.blue .kpi-value { color:var(--blue); } .kpi-card.amber .kpi-value { color:var(--amber); }
+  .kpi-sub { font-size:11px; color:var(--muted2); margin-top:4px; font-family:var(--mono); }
+ 
+  /* Charts */
+  .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:16px; }
+  .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; }
+  .chart-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
+  .chart-title { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); }
+  .chart-meta { font-size:11px; color:var(--muted2); font-family:var(--mono); }
+  .chart-legend { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:10px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); font-family:var(--mono); }
+  .legend-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+  .canvas-wrap { position:relative; width:100%; }
+ 
+  /* Table */
+  .table-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-top:16px; }
+  .table-top { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .table-title { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); }
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px; }
+  thead th { background:var(--card); color:var(--muted); padding:8px 12px; text-align:right; font-weight:500; font-size:11px; letter-spacing:0.04em; border-bottom:1px solid var(--border); white-space:nowrap; }
+  thead th:first-child, thead th:nth-child(2) { text-align:left; }
+  tbody tr { border-bottom:1px solid var(--border-light); transition:background 0.1s; }
+  tbody tr:hover { background:var(--card); }
+  tbody td { padding:7px 12px; text-align:right; color:var(--text); white-space:nowrap; }
+  tbody td:first-child, tbody td:nth-child(2) { text-align:left; color:var(--muted); }
+  .pos { color:var(--green); } .neg { color:var(--red); } .amt { color:var(--text); }
+ 
+  #dashboard { display:none; }
+ 
+  @media (max-width:900px) {
+    main { padding:16px; }
+    .setup-grid { grid-template-columns:1fr 1fr; }
+    .setup-grid .btn-load { grid-column:1/-1; }
+    .kpi-grid { grid-template-columns:repeat(2,1fr); }
+    .charts-grid { grid-template-columns:1fr; }
+    .charts-row { grid-template-columns:1fr; }
   }
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div class="logo">
     <div class="logo-dot" id="liveDot" style="animation:none;background:var(--muted2)"></div>
@@ -457,130 +120,99 @@
     <span class="status-badge" id="statusBadge">NOT CONNECTED</span>
   </div>
 </header>
-
+ 
 <main>
   <!-- Setup Panel -->
-  <div class="setup-panel" style="padding:0;">
+  <div class="setup-panel">
     <button onclick="toggleSetup()" id="setupToggle" style="width:100%;background:none;border:none;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--muted);font-family:var(--mono);">
       <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">&#9881; Google Sheets Connection</span>
       <span id="setupArrow" style="font-size:14px;transition:transform 0.2s;">&#9660;</span>
     </button>
     <div id="setupBody" style="display:none;padding:0 20px 18px;border-top:1px solid var(--border);">
-    <div style="height:14px;"></div>
-    <div class="setup-grid">
-      <div class="field">
-        <label>SPREADSHEET ID</label>
-        <input type="text" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" />
+      <div style="height:14px;"></div>
+      <div class="setup-grid">
+        <div class="field"><label>SPREADSHEET ID</label><input type="text" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" /></div>
+        <div class="field"><label>API KEY</label><input type="password" id="apiKey" placeholder="AIzaSy..." /></div>
+        <div class="field"><label>SHEET NAME</label><input type="text" id="sheetName" value="Sheet1" placeholder="Sheet1" /></div>
+        <button class="btn-load" id="loadBtn" onclick="loadData()">Load Data</button>
       </div>
-      <div class="field">
-        <label>API KEY</label>
-        <input type="password" id="apiKey" placeholder="AIzaSy..." />
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:10px;">
+        <div class="setup-hint">
+          <strong>How to connect:</strong> 1) <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> → Enable Google Sheets API → Create API Key.
+          2) In your sheet: Share → Anyone with the link → Viewer.
+          3) Copy the Sheet ID from the URL: docs.google.com/spreadsheets/d/<strong>[ID]</strong>/edit
+        </div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;user-select:none;padding-top:2px;">
+          <input type="checkbox" id="rememberMe" style="accent-color:var(--green);width:14px;height:14px;cursor:pointer;" />
+          Remember credentials
+        </label>
       </div>
-      <div class="field">
-        <label>SHEET NAME</label>
-        <input type="text" id="sheetName" value="Sheet1" placeholder="Sheet1" />
-      </div>
-      <button class="btn-load" id="loadBtn" onclick="loadData()">Load Data</button>
-    </div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:10px;">
-      <div class="setup-hint" style="flex:1;min-width:200px;">
-        <strong>How to connect:</strong>
-        &nbsp;1) Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> → Enable <em>Google Sheets API</em> → Create an <em>API Key</em>.
-        &nbsp;2) In your sheet, click <em>Share → Anyone with the link → Viewer</em>.
-        &nbsp;3) Copy your sheet ID from the URL: <code>docs.google.com/spreadsheets/d/<strong>[ID here]</strong>/edit</code>.
-      </div>
-      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;user-select:none;padding-top:2px;">
-        <input type="checkbox" id="rememberMe" style="accent-color:var(--green);width:14px;height:14px;cursor:pointer;" />
-        Remember credentials
-      </label>
-    </div>
-    <div id="savedNotice" style="display:none;margin-top:8px;font-size:11px;color:var(--green);font-family:var(--mono);">&#10003; Credentials saved locally on this device only</div>
+      <div id="savedNotice" style="display:none;margin-top:8px;font-size:11px;color:var(--green);font-family:var(--mono);">&#10003; Credentials saved locally on this device only</div>
     </div>
   </div>
-
+ 
   <div id="statusMsg"></div>
-
-  <!-- Dashboard -->
+ 
   <div id="dashboard">
-    <!-- Controls -->
+    <!-- Year Filter -->
     <div class="controls-bar">
       <div class="filter-group">
         <span class="filter-label">YEAR</span>
-        <button class="year-btn active" data-year="all" onclick="filterYear(this)">All</button>
+        <button class="filter-btn active" data-year="all" onclick="filterYear(this)">All</button>
         <div id="yearBtns" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
       </div>
       <span class="last-updated" id="lastUpdated"></span>
     </div>
-
-    <!-- Key Info Tile (All view only) -->
+ 
+    <!-- Key Info Tile -->
     <div id="keyInfoTile" style="display:none;margin-bottom:16px;"></div>
-
+ 
     <!-- KPI Cards -->
     <div class="kpi-grid">
-      <div class="kpi-card green">
-        <div class="kpi-label">Avg Monthly Income</div>
-        <div class="kpi-value" id="kpiIncome">—</div>
-        <div class="kpi-sub" id="kpiIncomeSub">—</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-label">Avg Monthly Spend</div>
-        <div class="kpi-value" id="kpiSpend">—</div>
-        <div class="kpi-sub" id="kpiSpendSub">—</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Latest Networth</div>
-        <div class="kpi-value" id="kpiNetworth">—</div>
-        <div class="kpi-sub" id="kpiNetworthSub">—</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-label">Avg MOM Growth</div>
-        <div class="kpi-value" id="kpiMom">—</div>
-        <div class="kpi-sub" id="kpiMomSub">—</div>
-      </div>
+      <div class="kpi-card green"><div class="kpi-label">Avg Monthly Income</div><div class="kpi-value" id="kpiIncome">—</div><div class="kpi-sub" id="kpiIncomeSub">—</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Avg Monthly Spend</div><div class="kpi-value" id="kpiSpend">—</div><div class="kpi-sub" id="kpiSpendSub">—</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Latest Networth</div><div class="kpi-value" id="kpiNetworth">—</div><div class="kpi-sub" id="kpiNetworthSub">—</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Avg MOM Growth</div><div class="kpi-value" id="kpiMom">—</div><div class="kpi-sub" id="kpiMomSub">—</div></div>
     </div>
-
-    <!-- Main Charts -->
+ 
+    <!-- Chart Time Range Filter -->
+    <div class="range-bar">
+      <span class="filter-label">CHART RANGE</span>
+      <button class="range-btn" data-range="1m" onclick="setRange(this)">1M</button>
+      <button class="range-btn" data-range="3m" onclick="setRange(this)">3M</button>
+      <button class="range-btn" data-range="6m" onclick="setRange(this)">6M</button>
+      <button class="range-btn" data-range="1y" onclick="setRange(this)">1Y</button>
+      <button class="range-btn" data-range="2y" onclick="setRange(this)">2Y</button>
+      <button class="range-btn" data-range="5y" onclick="setRange(this)">5Y</button>
+      <button class="range-btn active" data-range="all" onclick="setRange(this)">All</button>
+    </div>
+ 
+    <!-- Charts Row 1 -->
     <div class="charts-grid">
       <div class="chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Net Worth Over Time</span>
-          <span class="chart-meta" id="networthMeta"></span>
-        </div>
-        <div class="canvas-wrap" style="height:240px">
-          <canvas id="networthChart" role="img" aria-label="Net worth over time line chart"></canvas>
-        </div>
+        <div class="chart-header"><span class="chart-title">Net Worth Over Time</span><span class="chart-meta" id="networthMeta"></span></div>
+        <div class="canvas-wrap" style="height:240px"><canvas id="networthChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-header">
-          <span class="chart-title">MOM % Growth</span>
-          <span class="chart-meta">monthly</span>
-        </div>
-        <div class="canvas-wrap" style="height:240px">
-          <canvas id="momChart" role="img" aria-label="Month-over-month growth percentage"></canvas>
-        </div>
+        <div class="chart-header"><span class="chart-title">MOM % Growth</span><span class="chart-meta">monthly</span></div>
+        <div class="canvas-wrap" style="height:240px"><canvas id="momChart"></canvas></div>
       </div>
     </div>
-
+ 
+    <!-- Charts Row 2 -->
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Income vs. Spend</span>
-        </div>
+        <div class="chart-header"><span class="chart-title">Income vs. Spend</span></div>
         <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Income (TINC)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Income</div>
           <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Spend</div>
           <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Saved</div>
         </div>
-        <div class="canvas-wrap" style="height:220px">
-          <canvas id="incomeChart" role="img" aria-label="Income vs spend vs saved bar chart"></canvas>
-        </div>
+        <div class="canvas-wrap" style="height:220px"><canvas id="incomeChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Account Balances</span>
-          <span class="chart-meta">cumulative contribution</span>
-        </div>
-        <div class="chart-legend" id="accountLegend">
+        <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running balance</span></div>
+        <div class="chart-legend">
           <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>HYSA</div>
           <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>RBHD</div>
           <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div>CB</div>
@@ -588,34 +220,24 @@
           <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div>ROTH IRA</div>
           <div class="legend-item"><div class="legend-dot" style="background:#56d1ff"></div>HSA</div>
         </div>
-        <div class="canvas-wrap" style="height:220px">
-          <canvas id="accountChart" role="img" aria-label="Account contributions stacked bar chart"></canvas>
-        </div>
+        <div class="canvas-wrap" style="height:220px"><canvas id="accountChart"></canvas></div>
       </div>
     </div>
-
+ 
     <!-- Data Table -->
     <div class="table-card">
-      <div class="table-header">Monthly Data</div>
+      <div class="table-top">
+        <span class="table-title">Monthly Data</span>
+        <div class="filter-group" id="tableYearFilters"></div>
+      </div>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>Year</th>
-              <th>Month</th>
-              <th>Income</th>
-              <th>Spend</th>
-              <th>HYSA</th>
-              <th>RBHD</th>
-              <th>CB</th>
-              <th>FDLTY</th>
-              <th>ROTH IRA</th>
-              <th>HSA</th>
-              <th>Rent</th>
-              <th>Car Loan</th>
-              <th>Saved</th>
-              <th>Networth</th>
-              <th>MOM%</th>
+              <th>Year</th><th>Month</th><th>Income</th><th>Spend</th><th>Saved</th>
+              <th>HYSA</th><th>RBHD</th><th>CB</th><th>FDLTY</th>
+              <th>ROTH IRA</th><th>HSA</th><th>Rent</th><th>Car Loan</th>
+              <th>Networth</th><th>MOM%</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -624,25 +246,79 @@
     </div>
   </div>
 </main>
-
+ 
 <script>
-let allRows = [];
-let filteredRows = [];
-let charts = {};
+// ── State ─────────────────────────────────────────────────────────────────
+let allRows = [];          // all rows with cumulative balances
+let filteredRows = [];     // filtered by top year filter
 let activeYear = 'all';
-
+let activeRange = 'all';   // chart time range
+let activeTableYear = '';  // table year filter ('' = latest)
+let charts = {};
+ 
 const STORE_KEY = 'fin_dash_creds';
-
+const RANGE_MONTHS = { '1m':1, '3m':3, '6m':6, '1y':12, '2y':24, '5y':60 };
+ 
+// ── Helpers ───────────────────────────────────────────────────────────────
+const parseMoney = v => parseFloat(String(v||'').replace(/[$,\s]/g,''))||0;
+const parsePct   = v => parseFloat(String(v||'').replace('%',''))||0;
+ 
+function fmt(n) {
+  if (isNaN(n)) return '—';
+  return '$' + Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+}
+function fmtNet(n) {
+  if (isNaN(n)) return '—';
+  return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+}
+function fmtPct(n) {
+  if (isNaN(n)||!isFinite(n)) return '—';
+  return (n>=0?'+':'')+n.toFixed(2)+'%';
+}
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+ 
+// ── Cumulative balance computation ────────────────────────────────────────
+function computeCumulative(rows) {
+  let h=0, r=0, c=0, f=0, ro=0, hs=0;
+  return rows.map(row => {
+    h  += row.hysa  - row.hysa_wd;
+    r  += row.rbhd  - row.rbhd_wd;
+    c  += row.cb    - row.cb_wd;
+    f  += row.fdlty - row.fdlty_wd;
+    ro += row.roth;
+    hs += row.hsa;
+    return { ...row, cumHYSA:h, cumRBHD:r, cumCB:c, cumFDLTY:f, cumROTH:ro, cumHSA:hs };
+  });
+}
+ 
+// ── Chart row slicing (by time range, applied to filteredRows) ────────────
+function getChartRows() {
+  if (activeRange === 'all') return filteredRows;
+  const n = RANGE_MONTHS[activeRange] || filteredRows.length;
+  return filteredRows.slice(-n);
+}
+ 
+// ── Labels ────────────────────────────────────────────────────────────────
+function getLabels(rows) {
+  if (rows.length <= 24) return rows.map(r => r.month.slice(0,3)+' '+r.year.slice(2));
+  return rows.map((r,i) => {
+    if (i===0||i===rows.length-1) return r.month.slice(0,3)+' '+r.year.slice(2);
+    if (r.month==='January') return r.year;
+    return '';
+  });
+}
+ 
+// ── Credentials ───────────────────────────────────────────────────────────
 function loadSaved() {
   try {
     const saved = localStorage.getItem(STORE_KEY);
     if (!saved) {
-      // No saved credentials — open the panel so user can fill it in
       document.getElementById('setupBody').style.display = 'block';
       document.getElementById('setupArrow').style.transform = 'rotate(180deg)';
       return;
     }
-    const { sheetId, apiKey, sheetName } = JSON.parse(saved);
+    const {sheetId,apiKey,sheetName} = JSON.parse(saved);
     if (sheetId) document.getElementById('sheetId').value = sheetId;
     if (apiKey)  document.getElementById('apiKey').value  = apiKey;
     if (sheetName) document.getElementById('sheetName').value = sheetName;
@@ -651,451 +327,316 @@ function loadSaved() {
     loadData();
   } catch(e) {}
 }
-
-function saveCredentials(sheetId, apiKey, sheetName) {
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ sheetId, apiKey, sheetName }));
-    document.getElementById('savedNotice').style.display = 'block';
-  } catch(e) {}
+function saveCredentials(id,key,name) {
+  try { localStorage.setItem(STORE_KEY,JSON.stringify({sheetId:id,apiKey:key,sheetName:name})); document.getElementById('savedNotice').style.display='block'; } catch(e){}
 }
-
 function clearCredentials() {
-  try {
-    localStorage.removeItem(STORE_KEY);
-    document.getElementById('savedNotice').style.display = 'none';
-  } catch(e) {}
+  try { localStorage.removeItem(STORE_KEY); document.getElementById('savedNotice').style.display='none'; } catch(e){}
 }
-
-document.addEventListener('DOMContentLoaded', loadSaved);
-
-function parseMoney(v) {
-  if (!v) return 0;
-  return parseFloat(String(v).replace(/[$,\s]/g, '')) || 0;
-}
-
-function parsePercent(v) {
-  if (!v) return 0;
-  return parseFloat(String(v).replace('%', '')) || 0;
-}
-
-function fmt(n, decimals = 0) {
-  if (isNaN(n)) return '—';
-  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-}
-
-function fmtNet(n, decimals = 0) {
-  if (isNaN(n)) return '—';
-  const sign = n < 0 ? '-' : '';
-  return sign + '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-}
-
-function fmtPct(n) {
-  if (isNaN(n)) return '—';
-  return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-}
-
-function avg(arr) {
-  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-}
-
+ 
+// ── Load Data ─────────────────────────────────────────────────────────────
 async function loadData() {
-  const sheetId = document.getElementById('sheetId').value.trim();
-  const apiKey = document.getElementById('apiKey').value.trim();
+  const sheetId   = document.getElementById('sheetId').value.trim();
+  const apiKey    = document.getElementById('apiKey').value.trim();
   const sheetName = document.getElementById('sheetName').value.trim() || 'Sheet1';
-
-  if (!sheetId || !apiKey) {
-    showMsg('Please enter both the Spreadsheet ID and API Key.', 'error');
-    return;
-  }
-
+  if (!sheetId||!apiKey) { showMsg('Please enter both the Spreadsheet ID and API Key.','error'); return; }
+ 
   const btn = document.getElementById('loadBtn');
-  btn.disabled = true;
-  btn.textContent = 'Loading…';
-  showMsg('Connecting to Google Sheets…', '');
-
-  const range = encodeURIComponent(`${sheetName}!A1:W300`);
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-  const keyRange = encodeURIComponent(`${sheetName}!AF4:AJ18`);
-  const keyUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${keyRange}?key=${apiKey}`;
-
+  btn.disabled = true; btn.textContent = 'Loading…';
+  showMsg('Connecting to Google Sheets…','');
+ 
+  const url    = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!A1:W300')}?key=${apiKey}`;
+  const keyUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!AF4:AJ18')}?key=${apiKey}`;
+ 
   try {
-    const [res, keyRes] = await Promise.all([fetch(url), fetch(keyUrl)]);
-    const json = await res.json();
+    const [res,keyRes] = await Promise.all([fetch(url),fetch(keyUrl)]);
+    const json    = await res.json();
     const keyJson = await keyRes.json();
-
-    if (json.error) {
-      throw new Error(json.error.message || 'API error');
-    }
-
-    window._keyInfoRows = keyJson.values || [];
-    const rawRows = json.values || [];
-
-    // Find header row (contains "Year" and "Month")
-    let headerIdx = rawRows.findIndex(r => r[0] === 'Year' && r[1] === 'Month');
-    if (headerIdx < 0) headerIdx = 3;
-
-    const dataRows = rawRows.slice(headerIdx + 1).filter(r => r[0] && r[1] && /^\d{4}$/.test(String(r[0])));
-
-    allRows = dataRows.map(r => ({
-      year: String(r[0] || ''),
-      month: String(r[1] || ''),
-      tinc: parseMoney(r[2]),
-      inc1: parseMoney(r[3]),
-      inc2: parseMoney(r[4]),
-      texp: parseMoney(r[5]),
-      hysa: parseMoney(r[6]),
-      hysa_wd: parseMoney(r[7]),
-      rbhd: parseMoney(r[8]),
-      rbhd_wd: parseMoney(r[9]),
-      cb: parseMoney(r[10]),
-      cb_wd: parseMoney(r[11]),
-      fdlty: parseMoney(r[12]),
-      fdlty_wd: parseMoney(r[13]),
-      roth: parseMoney(r[14]),
-      hsa: parseMoney(r[15]),
-      rent: parseMoney(r[16]),
-      carloan: parseMoney(r[17]),
-      spend: parseMoney(r[18]),
-      save: parseMoney(r[19]),
-      networth: parseMoney(r[21]),
-      mom: parsePercent(r[22]),
+    if (json.error) throw new Error(json.error.message||'API error');
+ 
+    window._keyInfoRows = keyJson.values||[];
+    const rawRows = json.values||[];
+    let headerIdx = rawRows.findIndex(r=>r[0]==='Year'&&r[1]==='Month');
+    if (headerIdx<0) headerIdx=3;
+ 
+    const dataRows = rawRows.slice(headerIdx+1).filter(r=>r[0]&&r[1]&&/^\d{4}$/.test(String(r[0])));
+ 
+    // Parse rows
+    const parsed = dataRows.map(r=>({
+      year:String(r[0]||''), month:String(r[1]||''),
+      tinc:parseMoney(r[2]),  inc1:parseMoney(r[3]),   inc2:parseMoney(r[4]),
+      texp:parseMoney(r[5]),
+      hysa:parseMoney(r[6]),  hysa_wd:parseMoney(r[7]),
+      rbhd:parseMoney(r[8]),  rbhd_wd:parseMoney(r[9]),
+      cb:parseMoney(r[10]),   cb_wd:parseMoney(r[11]),
+      fdlty:parseMoney(r[12]),fdlty_wd:parseMoney(r[13]),
+      roth:parseMoney(r[14]), hsa:parseMoney(r[15]),
+      rent:parseMoney(r[16]), carloan:parseMoney(r[17]),
+      spend:parseMoney(r[18]),save:parseMoney(r[19]),
+      networth:parseMoney(r[21]), mom:parsePct(r[22]),
     }));
-
-    if (allRows.length === 0) {
-      throw new Error('No data found. Check your sheet name and that rows start with a 4-digit year.');
-    }
-
-    // Build year filter buttons
-    const years = [...new Set(allRows.map(r => r.year))].sort();
-    const yearBtns = document.getElementById('yearBtns');
-    yearBtns.innerHTML = years.map(y =>
-      `<button class="year-btn" data-year="${y}" onclick="filterYear(this)">${y}</button>`
+ 
+    // Attach cumulative balances
+    allRows = computeCumulative(parsed);
+ 
+    if (!allRows.length) throw new Error('No data found. Check sheet name and that rows start with a 4-digit year.');
+ 
+    // Year filter buttons (top)
+    const years = [...new Set(allRows.map(r=>r.year))].sort();
+    document.getElementById('yearBtns').innerHTML = years.map(y=>
+      `<button class="filter-btn" data-year="${y}" onclick="filterYear(this)">${y}</button>`
     ).join('');
-
-    showMsg('', '');
+ 
+    // Table year filter — default to latest year
+    activeTableYear = years[years.length-1];
+    buildTableYearFilter(years);
+ 
+    showMsg('','');
     document.getElementById('dashboard').style.display = 'block';
-
     document.getElementById('statusBadge').textContent = 'CONNECTED';
     document.getElementById('statusBadge').className = 'status-badge live';
     const dot = document.getElementById('liveDot');
-    dot.style.background = 'var(--green)';
-    dot.style.boxShadow = '0 0 6px var(--green)';
-    dot.style.animation = 'pulse 2s infinite';
-
-    const now = new Date();
-    document.getElementById('lastUpdated').textContent =
-      'fetched ' + now.toLocaleTimeString();
-
-    activeYear = 'all';
+    dot.style.background='var(--green)'; dot.style.boxShadow='0 0 6px var(--green)'; dot.style.animation='pulse 2s infinite';
+    document.getElementById('lastUpdated').textContent = 'fetched '+new Date().toLocaleTimeString();
+ 
+    activeYear='all'; activeRange='all';
+    document.querySelectorAll('.range-btn').forEach(b=>b.classList.toggle('active',b.dataset.range==='all'));
+ 
     applyFilter();
-
-    if (document.getElementById('rememberMe').checked) {
-      saveCredentials(sheetId, apiKey, sheetName);
-    } else {
-      clearCredentials();
-    }
-
-  } catch (e) {
-    showMsg('Error: ' + e.message, 'error');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Load Data';
+    if (document.getElementById('rememberMe').checked) saveCredentials(sheetId,apiKey,sheetName);
+    else clearCredentials();
+ 
+  } catch(e) { showMsg('Error: '+e.message,'error'); }
+  btn.disabled=false; btn.textContent='Load Data';
 }
-
-function showMsg(text, type) {
-  const el = document.getElementById('statusMsg');
-  if (!text) { el.innerHTML = ''; return; }
-  el.innerHTML = `<div class="message ${type}">${text}</div>`;
+ 
+// ── Filter helpers ────────────────────────────────────────────────────────
+function showMsg(text,type) {
+  const el=document.getElementById('statusMsg');
+  el.innerHTML = text ? `<div class="message ${type}">${text}</div>` : '';
 }
-
+ 
 function filterYear(btn) {
-  document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn[data-year]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   activeYear = btn.dataset.year;
   applyFilter();
 }
-
+ 
+function setRange(btn) {
+  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeRange = btn.dataset.range;
+  renderCharts();
+}
+ 
 function applyFilter() {
-  filteredRows = activeYear === 'all'
-    ? allRows
-    : allRows.filter(r => r.year === activeYear);
+  filteredRows = activeYear==='all' ? allRows : allRows.filter(r=>r.year===activeYear);
   renderKPIs();
   renderCharts();
   renderTable();
   renderKeyInfo();
 }
-
+ 
+// ── Table year filter ─────────────────────────────────────────────────────
+function buildTableYearFilter(years) {
+  const container = document.getElementById('tableYearFilters');
+  container.innerHTML =
+    `<button class="filter-btn" data-ty="all" onclick="setTableYear(this)">All</button>` +
+    years.map(y=>`<button class="filter-btn${y===activeTableYear?' active':''}" data-ty="${y}" onclick="setTableYear(this)">${y}</button>`).join('');
+}
+ 
+function setTableYear(btn) {
+  document.querySelectorAll('#tableYearFilters .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeTableYear = btn.dataset.ty;
+  renderTable();
+}
+ 
+// ── KPIs ──────────────────────────────────────────────────────────────────
 function renderKPIs() {
   const rows = filteredRows;
-  const incomes = rows.map(r => r.tinc);
-  const spends = rows.map(r => r.spend);
-  const momVals = rows.map(r => r.mom).filter(v => !isNaN(v) && isFinite(v));
-  const lastNW = rows.length ? rows[rows.length - 1].networth : 0;
-  const firstNW = rows.length ? rows[0].networth : 0;
-  const nwChange = lastNW - firstNW;
-
-  document.getElementById('kpiIncome').textContent = fmt(avg(incomes));
-  document.getElementById('kpiIncomeSub').textContent = `total ${fmt(incomes.reduce((a,b) => a+b, 0))}`;
-
-  document.getElementById('kpiSpend').textContent = fmt(avg(spends));
-  document.getElementById('kpiSpendSub').textContent = `total ${fmt(spends.reduce((a,b) => a+b, 0))}`;
-
-  document.getElementById('kpiNetworth').textContent = fmt(lastNW);
-  const nwSub = nwChange >= 0 ? `+${fmt(nwChange)} growth` : `${fmt(nwChange)} change`;
-  document.getElementById('kpiNetworthSub').textContent = nwSub;
-
-  const avgMom = avg(momVals);
-  document.getElementById('kpiMom').textContent = fmtPct(avgMom);
-  document.getElementById('kpiMomSub').textContent = `over ${rows.length} months`;
+  const incomes = rows.map(r=>r.tinc), spends=rows.map(r=>r.spend);
+  const momVals = rows.map(r=>r.mom).filter(v=>isFinite(v));
+  const lastNW  = rows.length ? rows[rows.length-1].networth : 0;
+  const nwChange = lastNW - (rows.length ? rows[0].networth : 0);
+ 
+  document.getElementById('kpiIncome').textContent    = fmt(avg(incomes));
+  document.getElementById('kpiIncomeSub').textContent = `total ${fmt(incomes.reduce((a,b)=>a+b,0))}`;
+  document.getElementById('kpiSpend').textContent     = fmt(avg(spends));
+  document.getElementById('kpiSpendSub').textContent  = `total ${fmt(spends.reduce((a,b)=>a+b,0))}`;
+  document.getElementById('kpiNetworth').textContent  = fmt(lastNW);
+  document.getElementById('kpiNetworthSub').textContent = (nwChange>=0?'+':'')+fmt(nwChange)+' growth';
+  document.getElementById('kpiMom').textContent       = fmtPct(avg(momVals));
+  document.getElementById('kpiMomSub').textContent    = `over ${rows.length} months`;
 }
-
-function getLabels() {
-  if (filteredRows.length <= 24) {
-    return filteredRows.map(r => r.month.slice(0,3) + ' ' + r.year.slice(2));
-  }
-  return filteredRows.map((r, i) => {
-    if (i === 0 || i === filteredRows.length - 1) return r.month.slice(0,3) + ' ' + r.year.slice(2);
-    if (r.month === 'January') return r.year;
-    return '';
-  });
-}
-
-function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-}
-
+ 
+// ── Charts ────────────────────────────────────────────────────────────────
 function renderCharts() {
-  const labels = getLabels();
-  const rows = filteredRows;
-
-  const gridColor = '#21262d';
-  const tickColor = '#6e7681';
-  const tooltipBg = '#161b22';
-  const tooltipBorder = '#30363d';
-
+  const rows   = getChartRows();
+  const labels = getLabels(rows);
+ 
+  const gridC='#21262d', tickC='#6e7681', tipBg='#161b22', tipBrd='#30363d';
+ 
   const baseOpts = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: {
-      backgroundColor: tooltipBg,
-      borderColor: tooltipBorder,
-      borderWidth: 1,
-      titleColor: '#e6edf3',
-      bodyColor: '#8b949e',
-      padding: 10,
-      callbacks: {}
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{
+      backgroundColor:tipBg, borderColor:tipBrd, borderWidth:1,
+      titleColor:'#e6edf3', bodyColor:'#8b949e', padding:10, callbacks:{}
     }},
-    scales: {
-      x: { ticks: { color: tickColor, font: { family: "'IBM Plex Mono'", size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 12 }, grid: { color: gridColor } },
-      y: { ticks: { color: tickColor, font: { family: "'IBM Plex Mono'", size: 10 } }, grid: { color: gridColor } }
+    scales:{
+      x:{ ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:10},maxRotation:45,autoSkip:true,maxTicksLimit:12}, grid:{color:gridC} },
+      y:{ ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:10}}, grid:{color:gridC} }
     }
   };
-
-  const moneyTick = v => '$' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v);
-  const moneyTip = v => '$' + Math.round(v).toLocaleString();
-
+ 
+  const moneyTick = v => '$'+(Math.abs(v)>=1000?(v/1000).toFixed(0)+'k':v);
+  const moneyTip  = v => '$'+Math.round(v).toLocaleString();
+  const fullLabels = rows.map(r=>r.month+' '+r.year);
+ 
   // 1. Networth
   destroyChart('nw');
-  const nwCtx = document.getElementById('networthChart').getContext('2d');
-  const nwData = rows.map(r => r.networth);
-  document.getElementById('networthMeta').textContent =
-    rows.length ? fmt(nwData[nwData.length-1]) : '';
-  const fullLabels = rows.map(r => r.month + ' ' + r.year);
-  charts['nw'] = new Chart(nwCtx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data: nwData,
-        borderColor: '#58a6ff',
-        backgroundColor: 'rgba(88,166,255,0.07)',
-        borderWidth: 2,
-        pointRadius: rows.length > 24 ? 0 : 3,
-        pointHoverRadius: 7,
-        pointHoverBackgroundColor: '#58a6ff',
-        pointHoverBorderColor: '#e6edf3',
-        pointHoverBorderWidth: 2,
-        fill: true,
-        tension: 0.3,
-      }]
-    },
-    options: {
-      ...JSON.parse(JSON.stringify(baseOpts)),
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        ...baseOpts.plugins,
-        tooltip: {
-          ...baseOpts.plugins.tooltip,
-          displayColors: false,
-          callbacks: {
-            title: ctx => fullLabels[ctx[0].dataIndex],
-            label: ctx => 'Networth: ' + moneyTip(ctx.raw)
-          }
-        }
-      },
-      scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, ticks: { ...baseOpts.scales.y.ticks, callback: moneyTick } } }
+  const nwData = rows.map(r=>r.networth);
+  document.getElementById('networthMeta').textContent = rows.length ? fmt(nwData[nwData.length-1]) : '';
+  charts['nw'] = new Chart(document.getElementById('networthChart').getContext('2d'),{
+    type:'line',
+    data:{ labels, datasets:[{
+      data:nwData, borderColor:'#58a6ff', backgroundColor:'rgba(88,166,255,0.07)',
+      borderWidth:2, pointRadius:rows.length>24?0:3,
+      pointHoverRadius:7, pointHoverBackgroundColor:'#58a6ff',
+      pointHoverBorderColor:'#e6edf3', pointHoverBorderWidth:2,
+      fill:true, tension:0.3
+    }]},
+    options:{...JSON.parse(JSON.stringify(baseOpts)),
+      interaction:{mode:'index',intersect:false},
+      plugins:{...baseOpts.plugins, tooltip:{...baseOpts.plugins.tooltip, displayColors:false,
+        callbacks:{ title:ctx=>fullLabels[ctx[0].dataIndex], label:ctx=>'Networth: '+moneyTip(ctx.raw) }
+      }},
+      scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks, callback:moneyTick}}}
     }
   });
-
+ 
   // 2. MOM %
   destroyChart('mom');
-  const momCtx = document.getElementById('momChart').getContext('2d');
-  const momData = rows.map(r => r.mom);
-  charts['mom'] = new Chart(momCtx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: momData,
-        backgroundColor: momData.map(v => v >= 0 ? 'rgba(63,185,80,0.7)' : 'rgba(248,81,73,0.7)'),
-        borderRadius: 2,
-      }]
-    },
-    options: { ...JSON.parse(JSON.stringify(baseOpts)), plugins: {
-      ...baseOpts.plugins,
-      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
-        label: ctx => 'MOM: ' + ctx.raw.toFixed(2) + '%'
-      }}
-    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, ticks: { ...baseOpts.scales.y.ticks, callback: v => v.toFixed(1) + '%' } } } }
+  const momData = rows.map(r=>r.mom);
+  charts['mom'] = new Chart(document.getElementById('momChart').getContext('2d'),{
+    type:'bar',
+    data:{ labels, datasets:[{ data:momData,
+      backgroundColor:momData.map(v=>v>=0?'rgba(63,185,80,0.7)':'rgba(248,81,73,0.7)'), borderRadius:2
+    }]},
+    options:{...JSON.parse(JSON.stringify(baseOpts)),
+      interaction:{mode:'index',intersect:false},
+      plugins:{...baseOpts.plugins, tooltip:{...baseOpts.plugins.tooltip,
+        callbacks:{ title:ctx=>fullLabels[ctx[0].dataIndex], label:ctx=>'MOM: '+ctx.raw.toFixed(2)+'%' }
+      }},
+      scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks, callback:v=>v.toFixed(1)+'%'}}}
+    }
   });
-
-  // 3. Income vs Spend
+ 
+  // 3. Income vs Spend — LINE chart
   destroyChart('inc');
-  const incCtx = document.getElementById('incomeChart').getContext('2d');
-  charts['inc'] = new Chart(incCtx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Income', data: rows.map(r => r.tinc), backgroundColor: 'rgba(63,185,80,0.8)', borderRadius: 2 },
-        { label: 'Spend', data: rows.map(r => r.spend), backgroundColor: 'rgba(248,81,73,0.8)', borderRadius: 2 },
-        { label: 'Saved', data: rows.map(r => r.save), backgroundColor: 'rgba(88,166,255,0.8)', borderRadius: 2 },
-      ]
-    },
-    options: { ...JSON.parse(JSON.stringify(baseOpts)), plugins: {
-      ...baseOpts.plugins,
-      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
-        label: ctx => ctx.dataset.label + ': ' + moneyTip(ctx.raw)
-      }}
-    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, ticks: { ...baseOpts.scales.y.ticks, callback: moneyTick } } } }
+  charts['inc'] = new Chart(document.getElementById('incomeChart').getContext('2d'),{
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Income', data:rows.map(r=>r.tinc),  borderColor:'#3fb950', backgroundColor:'rgba(63,185,80,0.08)',  borderWidth:2, pointRadius:rows.length>24?0:2, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'Spend',  data:rows.map(r=>r.spend), borderColor:'#f85149', backgroundColor:'rgba(248,81,73,0.08)',  borderWidth:2, pointRadius:rows.length>24?0:2, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'Saved',  data:rows.map(r=>r.save),  borderColor:'#58a6ff', backgroundColor:'rgba(88,166,255,0.08)', borderWidth:2, pointRadius:rows.length>24?0:2, pointHoverRadius:5, fill:false, tension:0.3 },
+    ]},
+    options:{...JSON.parse(JSON.stringify(baseOpts)),
+      interaction:{mode:'index',intersect:false},
+      plugins:{...baseOpts.plugins, tooltip:{...baseOpts.plugins.tooltip,
+        callbacks:{ title:ctx=>fullLabels[ctx[0].dataIndex], label:ctx=>ctx.dataset.label+': '+moneyTip(ctx.raw) }
+      }},
+      scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks, callback:moneyTick}}}
+    }
   });
-
-  // 4. Account balances (stacked bar of contributions)
+ 
+  // 4. Account Balances — running balance (cumulative)
   destroyChart('acct');
-  const acctCtx = document.getElementById('accountChart').getContext('2d');
-  charts['acct'] = new Chart(acctCtx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'HYSA',     data: rows.map(r => r.hysa - r.hysa_wd),   backgroundColor: rows.map(r => (r.hysa - r.hysa_wd) >= 0 ? 'rgba(63,185,80,0.85)'   : 'rgba(248,81,73,0.75)'),  borderRadius: 1 },
-        { label: 'RBHD',     data: rows.map(r => r.rbhd - r.rbhd_wd),   backgroundColor: rows.map(r => (r.rbhd - r.rbhd_wd) >= 0 ? 'rgba(88,166,255,0.85)'  : 'rgba(248,81,73,0.75)'),  borderRadius: 1 },
-        { label: 'CB',       data: rows.map(r => r.cb - r.cb_wd),       backgroundColor: rows.map(r => (r.cb - r.cb_wd) >= 0     ? 'rgba(210,153,34,0.85)'  : 'rgba(248,81,73,0.75)'),  borderRadius: 1 },
-        { label: 'FDLTY',    data: rows.map(r => r.fdlty - r.fdlty_wd), backgroundColor: rows.map(r => (r.fdlty - r.fdlty_wd) >= 0 ? 'rgba(163,113,247,0.85)' : 'rgba(248,81,73,0.75)'), borderRadius: 1 },
-        { label: 'ROTH IRA', data: rows.map(r => r.roth),               backgroundColor: 'rgba(57,211,83,0.85)',   borderRadius: 1 },
-        { label: 'HSA',      data: rows.map(r => r.hsa),                backgroundColor: 'rgba(86,209,255,0.85)',  borderRadius: 1 },
-      ]
-    },
-    options: {
-      ...JSON.parse(JSON.stringify(baseOpts)),
-      plugins: {
-        ...baseOpts.plugins,
-        tooltip: { ...baseOpts.plugins.tooltip, callbacks: { label: ctx => ctx.dataset.label + ': ' + moneyTip(ctx.raw) } }
-      },
-      scales: {
-        x: { ...baseOpts.scales.x, stacked: true },
-        y: { ...baseOpts.scales.y, stacked: true, ticks: { ...baseOpts.scales.y.ticks, callback: moneyTick } }
-      }
+  charts['acct'] = new Chart(document.getElementById('accountChart').getContext('2d'),{
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'HYSA',     data:rows.map(r=>r.cumHYSA),  borderColor:'#3fb950', backgroundColor:'rgba(63,185,80,0.05)',   borderWidth:1.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'RBHD',     data:rows.map(r=>r.cumRBHD),  borderColor:'#58a6ff', backgroundColor:'rgba(88,166,255,0.05)',  borderWidth:1.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'CB',       data:rows.map(r=>r.cumCB),    borderColor:'#d29922', backgroundColor:'rgba(210,153,34,0.05)',  borderWidth:1.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'FDLTY',    data:rows.map(r=>r.cumFDLTY), borderColor:'#a371f7', backgroundColor:'rgba(163,113,247,0.05)', borderWidth:1.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'ROTH IRA', data:rows.map(r=>r.cumROTH),  borderColor:'#39d353', backgroundColor:'rgba(57,211,83,0.05)',   borderWidth:1.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.3 },
+      { label:'HSA',      data:rows.map(r=>r.cumHSA),   borderColor:'#56d1ff', backgroundColor:'rgba(86,209,255,0.05)',  borderWidth:1.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.3 },
+    ]},
+    options:{...JSON.parse(JSON.stringify(baseOpts)),
+      interaction:{mode:'index',intersect:false},
+      plugins:{...baseOpts.plugins, tooltip:{...baseOpts.plugins.tooltip,
+        callbacks:{ title:ctx=>fullLabels[ctx[0].dataIndex], label:ctx=>ctx.dataset.label+': '+moneyTip(ctx.raw) }
+      }},
+      scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks, callback:moneyTick}}}
     }
   });
 }
-
+ 
+// ── Table ─────────────────────────────────────────────────────────────────
 function renderTable() {
+  const source = (!activeTableYear||activeTableYear==='all') ? allRows : allRows.filter(r=>r.year===activeTableYear);
+  const rows = [...source].reverse();
   const tbody = document.getElementById('tableBody');
-  const rows = [...filteredRows].reverse();
-  tbody.innerHTML = rows.map(r => {
-    const momClass = r.mom > 0 ? 'pos' : r.mom < 0 ? 'neg' : '';
+  tbody.innerHTML = rows.map(r=>{
+    const momC = r.mom>0?'pos':r.mom<0?'neg':'';
+    const hysaNet=r.hysa-r.hysa_wd, rbhdNet=r.rbhd-r.rbhd_wd, cbNet=r.cb-r.cb_wd, fdltyNet=r.fdlty-r.fdlty_wd;
     return `<tr>
-      <td>${r.year}</td>
-      <td>${r.month}</td>
+      <td>${r.year}</td><td>${r.month}</td>
       <td class="amt">${fmt(r.tinc)}</td>
       <td class="neg">${fmt(r.spend)}</td>
-      <td class="${(r.hysa - r.hysa_wd) < 0 ? 'neg' : ''}">${fmtNet(r.hysa - r.hysa_wd)}</td>
-      <td class="${(r.rbhd - r.rbhd_wd) < 0 ? 'neg' : ''}">${fmtNet(r.rbhd - r.rbhd_wd)}</td>
-      <td class="${(r.cb   - r.cb_wd)   < 0 ? 'neg' : ''}">${fmtNet(r.cb   - r.cb_wd)}</td>
-      <td class="${(r.fdlty- r.fdlty_wd)< 0 ? 'neg' : ''}">${fmtNet(r.fdlty- r.fdlty_wd)}</td>
-      <td>${fmt(r.roth)}</td>
-      <td>${fmt(r.hsa)}</td>
-      <td>${fmt(r.rent)}</td>
-      <td>${fmt(r.carloan)}</td>
       <td class="pos">${fmt(r.save)}</td>
+      <td class="${hysaNet<0?'neg':''}">${fmtNet(hysaNet)}</td>
+      <td class="${rbhdNet<0?'neg':''}">${fmtNet(rbhdNet)}</td>
+      <td class="${cbNet<0?'neg':''}">${fmtNet(cbNet)}</td>
+      <td class="${fdltyNet<0?'neg':''}">${fmtNet(fdltyNet)}</td>
+      <td>${fmt(r.roth)}</td><td>${fmt(r.hsa)}</td>
+      <td>${fmt(r.rent)}</td><td>${fmt(r.carloan)}</td>
       <td class="amt">${fmt(r.networth)}</td>
-      <td class="${momClass}">${fmtPct(r.mom)}</td>
+      <td class="${momC}">${fmtPct(r.mom)}</td>
     </tr>`;
   }).join('');
 }
-
-// Allow Enter to trigger load
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && (document.activeElement.id === 'sheetId' || document.activeElement.id === 'apiKey')) {
-    loadData();
-  }
-});
-
-document.getElementById('rememberMe').addEventListener('change', function() {
-  if (!this.checked) clearCredentials();
-});
-
-function toggleSetup() {
-  const body = document.getElementById('setupBody');
-  const arrow = document.getElementById('setupArrow');
-  const open = body.style.display === 'none';
-  body.style.display = open ? 'block' : 'none';
-  arrow.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
-}
-
+ 
+// ── Key Info ──────────────────────────────────────────────────────────────
 function renderKeyInfo() {
   const tile = document.getElementById('keyInfoTile');
-  const rows = window._keyInfoRows || [];
-  if (!rows.length || activeYear !== 'all') { tile.style.display = 'none'; return; }
-
-  // Build a clean table from the raw cells
-  const tableRows = rows.map(row => {
-    const cells = row.map(cell => {
-      if (!cell || cell.trim() === '') return '';
-      return cell;
-    });
-    // Skip entirely empty rows
-    if (cells.every(c => c === '')) return '';
-    return cells;
-  }).filter(r => r !== '');
-
-  if (!tableRows.length) { tile.style.display = 'none'; return; }
-
-  const tableHtml = tableRows.map((cells, i) => {
-    const isHeader = i === 0;
-    const tag = isHeader ? 'th' : 'td';
-    const style = isHeader
-      ? 'background:var(--card);color:var(--muted);font-size:11px;letter-spacing:0.04em;font-weight:500;padding:8px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;'
-      : 'padding:7px 14px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-light);white-space:nowrap;';
-    return `<tr>${cells.map(c => `<${tag} style="${style}">${c}</${tag}>`).join('')}</tr>`;
+  const rows = window._keyInfoRows||[];
+  if (!rows.length||activeYear!=='all') { tile.style.display='none'; return; }
+  const tableRows = rows.map(row=>row.map(c=>(c||'').trim())).filter(r=>r.some(c=>c!==''));
+  if (!tableRows.length) { tile.style.display='none'; return; }
+  const html = tableRows.map((cells,i)=>{
+    const tag=i===0?'th':'td';
+    const s=i===0
+      ?'background:var(--card);color:var(--muted);font-size:11px;font-weight:500;padding:8px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;'
+      :'padding:7px 14px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-light);white-space:nowrap;';
+    return `<tr>${cells.map(c=>`<${tag} style="${s}">${c}</${tag}>`).join('')}</tr>`;
   }).join('');
-
-  tile.style.display = 'block';
-  tile.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Key Info</span>
-        <span style="font-size:11px;color:var(--muted2);font-family:var(--mono);">AF4:AJ18</span>
-      </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);">
-          ${tableHtml}
-        </table>
-      </div>
-    </div>`;
+  tile.style.display='block';
+  tile.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Key Info</span>
+      <span style="font-size:11px;color:var(--muted2);font-family:var(--mono);">AF4:AJ18</span>
+    </div>
+    <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);">${html}</table></div>
+  </div>`;
 }
+ 
+// ── UI helpers ────────────────────────────────────────────────────────────
+function toggleSetup() {
+  const body=document.getElementById('setupBody'), arrow=document.getElementById('setupArrow');
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  arrow.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+ 
+document.addEventListener('DOMContentLoaded', loadSaved);
+document.addEventListener('keydown',e=>{
+  if (e.key==='Enter'&&['sheetId','apiKey'].includes(document.activeElement.id)) loadData();
+});
+document.getElementById('rememberMe').addEventListener('change',function(){
+  if(!this.checked) clearCredentials();
+});
 </script>
 </body>
 </html>
