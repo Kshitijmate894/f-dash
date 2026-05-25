@@ -6,812 +6,234 @@
 <title>Financial Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   :root{
     --bg:#0d1117;--surface:#161b22;--card:#21262d;
     --border:#30363d;--border-light:#21262d;
-    --green:#3fb950;--green-dim:#1a4226;
-    --red:#f85149;--red-dim:#3d1c1c;
-    --amber:#d29922;--blue:#58a6ff;--purple:#a371f7;
+    --green:#3fb950;--red:#f85149;--amber:#d29922;--blue:#58a6ff;--purple:#a371f7;
     --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
     --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif;
   }
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.5;}
-  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-0.02em;}
-  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  .status-badge{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px;background:var(--card);border:1px solid var(--border);color:var(--muted);}
-  .status-badge.live{color:var(--green);border-color:var(--green-dim);background:var(--green-dim);}
-  main{padding:28px 32px;max-width:1440px;margin:0 auto;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;}
 
-  /* Setup */
-  .setup-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:24px;padding:0;}
-  .setup-grid{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:10px;align-items:end;}
-  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-family:var(--mono);letter-spacing:0.04em;}
-  .field input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none;transition:border-color 0.15s;}
-  .field input:focus{border-color:var(--blue);}
-  .field input::placeholder{color:var(--muted2);}
-  .btn-load{background:var(--green);color:#0d1117;border:none;border-radius:6px;padding:8px 18px;font-weight:600;font-size:13px;cursor:pointer;transition:opacity 0.15s,transform 0.1s;white-space:nowrap;height:36px;}
-  .btn-load:hover{opacity:0.85;}.btn-load:active{transform:scale(0.97);}.btn-load:disabled{opacity:0.4;cursor:not-allowed;}
-  .setup-hint{font-size:11px;color:var(--muted2);line-height:1.6;flex:1;min-width:200px;}
-  .setup-hint a{color:var(--blue);text-decoration:none;}
+  main{padding:28px;max-width:1440px;margin:0 auto;}
 
-  /* Message */
-  .message{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center;color:var(--muted);font-size:13px;margin-bottom:24px;}
-  .message.error{border-color:var(--red-dim);background:var(--red-dim);color:var(--red);}
-
-  /* Filters */
-  .controls-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
-  .filter-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .filter-label{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:0.04em;margin-right:2px;}
-  .filter-btn{background:var(--card);border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:4px 10px;font-size:12px;font-family:var(--mono);cursor:pointer;transition:all 0.15s;}
-  .filter-btn:hover{border-color:var(--green);color:var(--green);}
-  .filter-btn.active{background:var(--green-dim);border-color:var(--green);color:var(--green);font-weight:500;}
-  .last-updated{font-size:11px;color:var(--muted2);font-family:var(--mono);}
-  .range-bar{display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
-  .range-btn{background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--muted2);padding:3px 9px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all 0.12s;}
-  .range-btn:hover{color:var(--blue);border-color:var(--blue);}
-  .range-btn.active{background:rgba(88,166,255,0.12);border-color:var(--blue);color:var(--blue);font-weight:500;}
-
-  /* KPI — 5 cards */
-  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
-  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px;position:relative;overflow:hidden;}
-  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-  .kpi-card.green::before{background:var(--green);}.kpi-card.red::before{background:var(--red);}
-  .kpi-card.purple::before{background:var(--purple);}.kpi-card.blue::before{background:var(--blue);}
-  .kpi-card.amber::before{background:var(--amber);}
-  .kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:500;margin-bottom:8px;}
-  .kpi-value{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-0.01em;}
-  .kpi-card.green .kpi-value{color:var(--green);}.kpi-card.red .kpi-value{color:var(--red);}
-  .kpi-card.purple .kpi-value{color:var(--purple);}.kpi-card.blue .kpi-value{color:var(--blue);}
-  .kpi-card.amber .kpi-value{color:var(--amber);}
-  .kpi-sub{font-size:11px;color:var(--muted2);margin-top:4px;font-family:var(--mono);}
-  .kpi-sub2{font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);}
-
-  /* Charts */
-  .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
-  .charts-row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;}
-  .chart-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px;}
-  .chart-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
-  .chart-meta{font-size:11px;color:var(--muted2);font-family:var(--mono);}
-  .chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
-  .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-family:var(--mono);}
-  .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
-  .canvas-wrap{position:relative;width:100%;}
-
-  /* Tables */
-  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
-  .table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-  .table-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
-  .table-scroll{overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;}
-  thead th{background:var(--card);color:var(--muted);padding:8px 12px;text-align:right;font-weight:500;font-size:11px;letter-spacing:0.04em;border-bottom:1px solid var(--border);white-space:nowrap;}
-  thead th:first-child,thead th:nth-child(2){text-align:left;}
-  tbody tr{border-bottom:1px solid var(--border-light);transition:background 0.1s;}
-  tbody tr:hover{background:var(--card);}
-  tbody td{padding:7px 12px;text-align:right;color:var(--text);white-space:nowrap;}
-  tbody td:first-child{text-align:left;color:var(--muted);}
-  tbody td:nth-child(2){text-align:left;}
-  .pos{color:var(--green);}.neg{color:var(--red);}.amt{color:var(--text);}
-  #dashboard{display:none;}
-
-  @media(max-width:1100px){.charts-row2{grid-template-columns:1fr 1fr;}}
-  @media(max-width:900px){
-    main{padding:16px;}
-    .setup-grid{grid-template-columns:1fr 1fr;}
-    .setup-grid .btn-load{grid-column:1/-1;}
-    .kpi-grid{grid-template-columns:repeat(3,1fr);}
-    .charts-grid,.charts-row2{grid-template-columns:1fr;}
+  /* KPI GRID UPDATED → 6 columns */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:12px;
+    margin-bottom:24px;
   }
-  @media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+
+  .kpi-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px;
+  }
+
+  .kpi-label{font-size:11px;color:var(--muted);}
+  .kpi-value{font-family:var(--mono);font-size:20px;margin-top:6px;}
+  .kpi-sub,.kpi-sub2{font-size:11px;color:var(--muted2);margin-top:4px;}
+
+  .green{color:var(--green);}
+  .red{color:var(--red);}
+  .blue{color:var(--blue);}
+  .purple{color:var(--purple);}
+  .amber{color:var(--amber);}
+
+  .chart-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+
+  .canvas-wrap{height:300px;}
 </style>
 </head>
+
 <body>
-
-<header>
-  <div class="logo">
-    <div class="logo-dot" id="liveDot"></div>
-    Financial Dashboard
-  </div>
-  <span class="status-badge" id="statusBadge">NOT CONNECTED</span>
-</header>
-
 <main>
-  <!-- Setup -->
-  <div class="setup-panel">
-    <button onclick="toggleSetup()" style="width:100%;background:none;border:none;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--muted);font-family:var(--mono);">
-      <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">&#9881; Google Sheets Connection</span>
-      <span id="setupArrow" style="font-size:14px;transition:transform 0.2s;">&#9660;</span>
-    </button>
-    <div id="setupBody" style="display:none;padding:0 20px 18px;border-top:1px solid var(--border);">
-      <div style="height:14px;"></div>
-      <div class="setup-grid">
-        <div class="field"><label>SPREADSHEET ID</label><input type="text" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"/></div>
-        <div class="field"><label>API KEY</label><input type="password" id="apiKey" placeholder="AIzaSy..."/></div>
-        <div class="field"><label>SHEET NAME</label><input type="text" id="sheetName" value="Sheet1" placeholder="Sheet1"/></div>
-        <button class="btn-load" id="loadBtn" onclick="loadData()">Load Data</button>
-      </div>
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:10px;">
-        <div class="setup-hint">
-          <strong>How to connect:</strong> 1) <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> → Enable Google Sheets API → Create API Key.
-          2) Sheet → Share → Anyone with the link → Viewer.
-          3) Copy Sheet ID from URL: docs.google.com/spreadsheets/d/<strong>[ID]</strong>/edit
-        </div>
-        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;user-select:none;padding-top:2px;">
-          <input type="checkbox" id="rememberMe" style="accent-color:var(--green);width:14px;height:14px;cursor:pointer;"/>
-          Remember credentials
-        </label>
-      </div>
-      <div id="savedNotice" style="display:none;margin-top:8px;font-size:11px;color:var(--green);font-family:var(--mono);">&#10003; Credentials saved locally on this device only</div>
-    </div>
+
+<!-- KPI GRID -->
+<div class="kpi-grid">
+
+  <div class="kpi-card green">
+    <div class="kpi-label">Avg Monthly Income</div>
+    <div class="kpi-value" id="kpiIncome">—</div>
   </div>
 
-  <div id="statusMsg"></div>
-
-  <div id="dashboard">
-    <!-- Year Filter — All at end, built dynamically -->
-    <div class="controls-bar">
-      <div class="filter-group">
-        <span class="filter-label">YEAR</span>
-        <div id="yearBtns" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-      </div>
-      <span class="last-updated" id="lastUpdated"></span>
-    </div>
-
-    <!-- Key Info -->
-    <div id="keyInfoTile" style="display:none;margin-bottom:16px;"></div>
-
-    <!-- 5 KPI Cards: Income | Spending Rate | Savings Rate | Networth | MOM -->
-    <div class="kpi-grid">
-      <div class="kpi-card green">
-        <div class="kpi-label">Avg Monthly Income</div>
-        <div class="kpi-value" id="kpiIncome">—</div>
-        <div class="kpi-sub" id="kpiIncomeSub">—</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="kpi-label">Spending Rate</div>
-        <div class="kpi-value" id="kpiSpendRate">—</div>
-        <div class="kpi-sub" id="kpiSpendAvg">—</div>
-        <div class="kpi-sub2" id="kpiSpendTotal">—</div>
-      </div>
-      <div class="kpi-card purple">
-        <div class="kpi-label">Savings Rate</div>
-        <div class="kpi-value" id="kpiSaveRate">—</div>
-        <div class="kpi-sub" id="kpiSaveAvg">—</div>
-        <div class="kpi-sub2" id="kpiSaveTotal">—</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="kpi-label">Latest Networth</div>
-        <div class="kpi-value" id="kpiNetworth">—</div>
-        <div class="kpi-sub" id="kpiNetworthSub">—</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-label">Avg MOM Growth</div>
-        <div class="kpi-value" id="kpiMom">—</div>
-        <div class="kpi-sub" id="kpiMomSub">—</div>
-      </div>
-    </div>
-
-    <!-- Chart Range Filter -->
-    <div class="range-bar">
-      <span class="filter-label">CHART RANGE</span>
-      <button class="range-btn" data-range="1m" onclick="setRange(this)">1M</button>
-      <button class="range-btn" data-range="3m" onclick="setRange(this)">3M</button>
-      <button class="range-btn" data-range="6m" onclick="setRange(this)">6M</button>
-      <button class="range-btn" data-range="1y" onclick="setRange(this)">1Y</button>
-      <button class="range-btn" data-range="2y" onclick="setRange(this)">2Y</button>
-      <button class="range-btn" data-range="5y" onclick="setRange(this)">5Y</button>
-      <button class="range-btn active" data-range="all" onclick="setRange(this)">All</button>
-    </div>
-
-    <!-- Row 1: Networth | MOM -->
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Net Worth Over Time</span>
-          <span class="chart-meta" id="networthMeta"></span>
-        </div>
-        <div class="canvas-wrap" style="height:260px"><canvas id="networthChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">MOM % Growth</span><span class="chart-meta">monthly</span></div>
-        <div class="canvas-wrap" style="height:260px"><canvas id="momChart"></canvas></div>
-      </div>
-    </div>
-
-    <!-- Row 2: Income vs Spend | Account Balances | Portfolio Donut -->
-    <div class="charts-row2">
-      <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">Income vs. Spend</span></div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Income</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Spend</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Saved</div>
-        </div>
-        <div class="canvas-wrap" style="height:220px"><canvas id="incomeChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running total</span></div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>HYSA</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>RBHD</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div>CB</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#a371f7"></div>FDLTY</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div>ROTH</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#56d1ff"></div>HSA</div>
-        </div>
-        <div class="canvas-wrap" style="height:220px"><canvas id="accountChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">Portfolio Allocation</span><span class="chart-meta">current value</span></div>
-        <div class="canvas-wrap" style="height:180px"><canvas id="donutChart"></canvas></div>
-        <div id="donutLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;"></div>
-      </div>
-    </div>
-
-    <!-- Annual Summary -->
-    <div class="table-card">
-      <div class="table-top"><span class="table-title">Annual Summary</span></div>
-      <div class="table-scroll">
-        <table>
-          <thead><tr>
-            <th>Year</th><th>Total Income</th><th>Total Spend</th><th>Spending Rate</th>
-            <th>Total Saved</th><th>Savings Rate</th><th>Ending Networth</th><th>YOY Growth</th>
-          </tr></thead>
-          <tbody id="annualBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Monthly Data -->
-    <div class="table-card">
-      <div class="table-top">
-        <span class="table-title">Monthly Data</span>
-        <div class="filter-group" id="tableYearFilters"></div>
-      </div>
-      <div class="table-scroll">
-        <table>
-          <thead><tr>
-            <th>Year</th><th>Month</th><th>Income</th><th>Spend</th><th>Saved</th>
-            <th>HYSA</th><th>RBHD</th><th>CB</th><th>FDLTY</th>
-            <th>ROTH IRA</th><th>HSA</th><th>Rent</th><th>Car Loan</th>
-            <th>Networth</th><th>MOM%</th>
-          </tr></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div>
+  <div class="kpi-card red">
+    <div class="kpi-label">Spending Rate</div>
+    <div class="kpi-value" id="kpiSpendRate">—</div>
   </div>
+
+  <div class="kpi-card purple">
+    <div class="kpi-label">Savings Rate</div>
+    <div class="kpi-value" id="kpiSaveRate">—</div>
+  </div>
+
+  <div class="kpi-card blue">
+    <div class="kpi-label">Net Worth</div>
+    <div class="kpi-value" id="kpiNetworth">—</div>
+  </div>
+
+  <div class="kpi-card amber">
+    <div class="kpi-label">MOM Growth</div>
+    <div class="kpi-value" id="kpiMom">—</div>
+  </div>
+
+  <!-- ✅ NEW: $1M PROJECTION -->
+  <div class="kpi-card green">
+    <div class="kpi-label">$1M Projection</div>
+    <div class="kpi-value" id="kpiMillion">—</div>
+    <div class="kpi-sub" id="kpiMillionSub">—</div>
+    <div class="kpi-sub2" id="kpiMillionSub2">—</div>
+  </div>
+
+</div>
+
+<!-- PROJECTION CHART -->
+<div class="chart-card">
+  <div class="kpi-label">$1M NET WORTH PROJECTION</div>
+  <div class="canvas-wrap">
+    <canvas id="projectionChart"></canvas>
+  </div>
+</div>
+
 </main>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
-let allRows=[], filteredRows=[], charts={};
-let activeYear='all', activeRange='all', activeTableYear='';
-const STORE_KEY='fin_dash_creds';
-const RANGE_MONTHS={'1m':1,'3m':3,'6m':6,'1y':12,'2y':24,'5y':60};
-const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DONUT_COLORS=['#58a6ff','#3fb950','#d29922','#f85149','#a371f7','#56d1ff','#39d353','#ff9f43','#ee5a24','#9980FA'];
+let charts = {};
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-const parseMoney = v => parseFloat(String(v||'').replace(/[$,\s]/g,''))||0;
-const parsePct   = v => parseFloat(String(v||'').replace('%',''))||0;
+// ---------- helpers ----------
 const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
-const sum = arr => arr.reduce((a,b)=>a+b,0);
-const fmt    = n => isNaN(n)?'—':'$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
-const fmtNet = n => isNaN(n)?'—':(n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
-const fmtPct = n => (!isFinite(n)||isNaN(n))?'—':(n>=0?'+':'')+n.toFixed(2)+'%';
-const fmtRate= n => (!isFinite(n)||isNaN(n))?'—':n.toFixed(1)+'%';
-const destroyChart = id => { if(charts[id]){charts[id].destroy();delete charts[id];} };
+const fmt = n => '$' + Math.round(n).toLocaleString();
+const fmtPct = n => (n>=0?'+':'') + n.toFixed(1) + '%';
 
-// ── Cumulative balances (computed once on all data) ────────────────────────
-function computeCumulative(rows) {
-  let h=0,r=0,c=0,f=0,ro=0,hs=0;
-  return rows.map(row=>{
-    h += row.hysa  - row.hysa_wd;
-    r += row.rbhd  - row.rbhd_wd;
-    c += row.cb    - row.cb_wd;
-    f += row.fdlty - row.fdlty_wd;
-    ro+= row.roth;
-    hs+= row.hsa;
-    return{...row,cumHYSA:h,cumRBHD:r,cumCB:c,cumFDLTY:f,cumROTH:ro,cumHSA:hs};
-  });
-}
+function projectMillionaireDate(nw, monthly, rate){
+  const target = 1_000_000;
+  let m = 0;
+  let bal = nw;
 
-// ── getChartRows: slice filteredRows by active time range ─────────────────
-function getChartRows() {
-  if(activeRange==='all') return filteredRows;
-  const n = RANGE_MONTHS[activeRange] || filteredRows.length;
-  return filteredRows.slice(-Math.min(n, filteredRows.length));
-}
+  while(bal < target && m < 1000){
+    bal = bal * (1 + rate/12) + monthly;
+    m++;
+  }
 
-// ── Labels ─────────────────────────────────────────────────────────────────
-function getLabels(rows) {
-  if(rows.length<=24) return rows.map(r=>r.month.slice(0,3)+' '+r.year.slice(2));
-  return rows.map((r,i)=>{
-    if(i===0||i===rows.length-1) return r.month.slice(0,3)+' '+r.year.slice(2);
-    if(r.month==='January') return r.year;
-    return '';
-  });
-}
+  const d = new Date();
+  d.setMonth(d.getMonth() + m);
 
-// ── Credentials ────────────────────────────────────────────────────────────
-function loadSaved(){
-  try{
-    const s=localStorage.getItem(STORE_KEY);
-    if(!s){
-      document.getElementById('setupBody').style.display='block';
-      document.getElementById('setupArrow').style.transform='rotate(180deg)';
-      return;
-    }
-    const{sheetId,apiKey,sheetName}=JSON.parse(s);
-    if(sheetId) document.getElementById('sheetId').value=sheetId;
-    if(apiKey)  document.getElementById('apiKey').value=apiKey;
-    if(sheetName) document.getElementById('sheetName').value=sheetName;
-    document.getElementById('rememberMe').checked=true;
-    document.getElementById('savedNotice').style.display='block';
-    loadData();
-  }catch(e){}
-}
-function saveCredentials(id,key,name){
-  try{localStorage.setItem(STORE_KEY,JSON.stringify({sheetId:id,apiKey:key,sheetName:name}));
-  document.getElementById('savedNotice').style.display='block';}catch(e){}
-}
-function clearCredentials(){
-  try{localStorage.removeItem(STORE_KEY);
-  document.getElementById('savedNotice').style.display='none';}catch(e){}
-}
-
-// ── Load Data ──────────────────────────────────────────────────────────────
-async function loadData(){
-  const sheetId  =document.getElementById('sheetId').value.trim();
-  const apiKey   =document.getElementById('apiKey').value.trim();
-  const sheetName=document.getElementById('sheetName').value.trim()||'Sheet1';
-  if(!sheetId||!apiKey){showMsg('Please enter both the Spreadsheet ID and API Key.','error');return;}
-
-  const btn=document.getElementById('loadBtn');
-  btn.disabled=true; btn.textContent='Loading…';
-  showMsg('Connecting to Google Sheets…','');
-
-  const url   =`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!A1:W300')}?key=${apiKey}`;
-  const keyUrl=`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!AF4:AJ18')}?key=${apiKey}`;
-
-  try{
-    const[res,kRes]=await Promise.all([fetch(url),fetch(keyUrl)]);
-    const json=await res.json(); const kJson=await kRes.json();
-    if(json.error) throw new Error(json.error.message||'API error');
-
-    window._keyInfoRows=kJson.values||[];
-    const rawRows=json.values||[];
-    let hIdx=rawRows.findIndex(r=>r[0]==='Year'&&r[1]==='Month');
-    if(hIdx<0) hIdx=3;
-
-    const dataRows=rawRows.slice(hIdx+1).filter(r=>r[0]&&r[1]&&/^\d{4}$/.test(String(r[0])));
-    const parsed=dataRows.map(r=>({
-      year:String(r[0]||''), month:String(r[1]||''),
-      tinc:parseMoney(r[2]),  inc1:parseMoney(r[3]),   inc2:parseMoney(r[4]),
-      texp:parseMoney(r[5]),
-      hysa:parseMoney(r[6]),  hysa_wd:parseMoney(r[7]),
-      rbhd:parseMoney(r[8]),  rbhd_wd:parseMoney(r[9]),
-      cb:parseMoney(r[10]),   cb_wd:parseMoney(r[11]),
-      fdlty:parseMoney(r[12]),fdlty_wd:parseMoney(r[13]),
-      roth:parseMoney(r[14]), hsa:parseMoney(r[15]),
-      rent:parseMoney(r[16]), carloan:parseMoney(r[17]),
-      spend:parseMoney(r[18]),save:parseMoney(r[19]),
-      networth:parseMoney(r[21]), mom:parsePct(r[22]),
-    }));
-
-    // Compute cumulative balances on full dataset
-    allRows=computeCumulative(parsed);
-    if(!allRows.length) throw new Error('No data found. Check sheet name and that rows start with a 4-digit year.');
-
-    // Build year filter buttons — All at the END
-    const years=[...new Set(allRows.map(r=>r.year))].sort();
-    document.getElementById('yearBtns').innerHTML=
-      years.map(y=>`<button class="filter-btn" data-year="${y}" onclick="filterYear(this)">${y}</button>`).join('')+
-      `<button class="filter-btn active" data-year="all" onclick="filterYear(this)">All</button>`;
-
-    // Table year filter — default latest year
-    activeTableYear=years[years.length-1];
-    buildTableYearFilter(years);
-
-    showMsg('','');
-    document.getElementById('dashboard').style.display='block';
-    document.getElementById('statusBadge').textContent='CONNECTED';
-    document.getElementById('statusBadge').className='status-badge live';
-    const dot=document.getElementById('liveDot');
-    dot.style.background='var(--green)';
-    dot.style.boxShadow='0 0 6px var(--green)';
-    dot.style.animation='pulse 2s infinite';
-    document.getElementById('lastUpdated').textContent='fetched '+new Date().toLocaleTimeString();
-
-    activeYear='all'; activeRange='all';
-    document.querySelectorAll('.range-btn').forEach(b=>b.classList.toggle('active',b.dataset.range==='all'));
-    applyFilter();
-
-    if(document.getElementById('rememberMe').checked) saveCredentials(sheetId,apiKey,sheetName);
-    else clearCredentials();
-
-  }catch(e){showMsg('Error: '+e.message,'error');}
-  btn.disabled=false; btn.textContent='Load Data';
-}
-
-function showMsg(t,type){
-  document.getElementById('statusMsg').innerHTML=t?`<div class="message ${type}">${t}</div>`:'';
-}
-
-// ── Year filter ────────────────────────────────────────────────────────────
-function filterYear(btn){
-  document.querySelectorAll('#yearBtns .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  activeYear=btn.dataset.year;
-  applyFilter();
-}
-
-// ── Chart range filter ─────────────────────────────────────────────────────
-function setRange(btn){
-  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  activeRange=btn.dataset.range;
-  renderCharts(); // only re-renders charts, not KPIs or tables
-}
-
-// ── Apply all filters ──────────────────────────────────────────────────────
-function applyFilter(){
-  filteredRows=activeYear==='all'
-    ? allRows
-    : allRows.filter(r=>r.year===activeYear);
-  renderKPIs();
-  renderCharts();
-  renderTable();
-  renderAnnualSummary();
-  renderKeyInfo();
-}
-
-// ── Table year filter ──────────────────────────────────────────────────────
-function buildTableYearFilter(years){
-  document.getElementById('tableYearFilters').innerHTML=
-    `<button class="filter-btn" data-ty="all" onclick="setTableYear(this)">All</button>`+
-    years.map(y=>`<button class="filter-btn${y===activeTableYear?' active':''}" data-ty="${y}" onclick="setTableYear(this)">${y}</button>`).join('');
-}
-function setTableYear(btn){
-  document.querySelectorAll('#tableYearFilters .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  activeTableYear=btn.dataset.ty;
-  renderTable();
-}
-
-// ── KPIs ───────────────────────────────────────────────────────────────────
-function renderKPIs(){
-  const rows=filteredRows;
-  const incomes=rows.map(r=>r.tinc);
-  const spends =rows.map(r=>r.spend);
-  const saves  =rows.map(r=>r.save);
-  const momVals=rows.map(r=>r.mom).filter(isFinite);
-  const totalInc  =sum(incomes);
-  const totalSpend=sum(spends);
-  const totalSave =sum(saves);
-  const lastNW=rows.length?rows[rows.length-1].networth:0;
-  const nwChg =lastNW-(rows.length?rows[0].networth:0);
-  const spendRate=totalInc>0?(totalSpend/totalInc*100):0;
-  const saveRate =totalInc>0?(totalSave /totalInc*100):0;
-
-  document.getElementById('kpiIncome').textContent=fmt(avg(incomes));
-  document.getElementById('kpiIncomeSub').textContent=`total ${fmt(totalInc)}`;
-
-  document.getElementById('kpiSpendRate').textContent=fmtRate(spendRate);
-  document.getElementById('kpiSpendAvg').textContent=`avg ${fmt(avg(spends))}/mo`;
-  document.getElementById('kpiSpendTotal').textContent=`total ${fmt(totalSpend)}`;
-
-  document.getElementById('kpiSaveRate').textContent=fmtRate(saveRate);
-  document.getElementById('kpiSaveAvg').textContent=`avg ${fmt(avg(saves))}/mo`;
-  document.getElementById('kpiSaveTotal').textContent=`total ${fmt(totalSave)}`;
-
-  document.getElementById('kpiNetworth').textContent=fmt(lastNW);
-  document.getElementById('kpiNetworthSub').textContent=(nwChg>=0?'+':'')+fmt(nwChg)+' growth';
-
-  document.getElementById('kpiMom').textContent=fmtPct(avg(momVals));
-  document.getElementById('kpiMomSub').textContent=`over ${rows.length} months`;
-}
-
-// ── Charts ─────────────────────────────────────────────────────────────────
-function renderCharts(){
-  // Get time-range-sliced rows (respects both year filter AND range filter)
-  const rows=getChartRows();
-  if(!rows.length) return;
-
-  const labels    =getLabels(rows);
-  const fullLabels=rows.map(r=>r.month+' '+r.year);
-
-  const gridC='#21262d', tickC='#6e7681', tipBg='#161b22', tipBrd='#30363d';
-  const moneyTick=v=>'$'+(Math.abs(v)>=1000?(Math.round(v/1000))+'k':v);
-  const moneyTip =v=>'$'+Math.round(v).toLocaleString();
-  const pr=rows.length>24?0:2;
-
-  const baseOpts={
-    responsive:true, maintainAspectRatio:false,
-    plugins:{
-      legend:{display:false},
-      tooltip:{backgroundColor:tipBg,borderColor:tipBrd,borderWidth:1,
-        titleColor:'#e6edf3',bodyColor:'#8b949e',padding:10,callbacks:{}}
-    },
-    scales:{
-      x:{ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:10},maxRotation:45,autoSkip:true,maxTicksLimit:12},grid:{color:gridC}},
-      y:{ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:10}},grid:{color:gridC}}
-    }
+  return {
+    label: d.toLocaleDateString('en-US',{month:'short',year:'numeric'}),
+    months: m
   };
+}
 
-  // ── 1. Networth + Milestones (NO projection) ───────────────────────────
-  destroyChart('nw');
-  const nwData=rows.map(r=>r.networth);
-  const maxNW=Math.max(...nwData);
-  document.getElementById('networthMeta').textContent=rows.length?fmt(nwData[nwData.length-1]):'';
+// ---------- MAIN UPDATE ----------
+function renderKPIs(rows){
 
-  // Milestone lines every $50k up to max networth
-  const milestoneDS=[];
-  for(let v=50000;v<=maxNW;v+=50000){
-    milestoneDS.push({
-      label:'',
-      data:Array(labels.length).fill(v),
-      borderColor:'rgba(110,118,129,0.2)',
-      borderWidth:1,
-      borderDash:[5,5],
-      pointRadius:0,
-      fill:false,
-      tension:0,
-      isMilestone:true,
-    });
+  const incomes = rows.map(r=>r.tinc);
+  const spends  = rows.map(r=>r.spend);
+  const saves   = rows.map(r=>r.save);
+  const mom     = rows.map(r=>r.mom);
+
+  const lastNW = rows.at(-1).networth;
+
+  document.getElementById('kpiIncome').textContent = fmt(avg(incomes));
+  document.getElementById('kpiSpendRate').textContent =
+    fmtPct((avg(spends)/avg(incomes))*100);
+
+  document.getElementById('kpiSaveRate').textContent =
+    fmtPct((avg(saves)/avg(incomes))*100);
+
+  document.getElementById('kpiNetworth').textContent = fmt(lastNW);
+  document.getElementById('kpiMom').textContent = fmtPct(avg(mom));
+
+  // ---------- PROJECTION ----------
+  const monthlySave = avg(saves);
+
+  const cons = projectMillionaireDate(lastNW, monthlySave, 0.05);
+  const real = projectMillionaireDate(lastNW, monthlySave, 0.08);
+  const aggr = projectMillionaireDate(lastNW, monthlySave, 0.12);
+
+  document.getElementById('kpiMillion').textContent = real.label;
+  document.getElementById('kpiMillionSub').textContent =
+    `Aggressive: ${aggr.label}`;
+
+  document.getElementById('kpiMillionSub2').textContent =
+    `Conservative: ${cons.label}`;
+}
+
+// ---------- CHART ----------
+function renderProjectionChart(rows){
+
+  const start = rows.at(-1).networth;
+  const save = avg(rows.map(r=>r.save));
+  const months = 180;
+
+  function build(rate){
+    let v = start;
+    let arr = [];
+    for(let i=0;i<months;i++){
+      v = v * (1 + rate/12) + save;
+      arr.push(v);
+    }
+    return arr;
   }
 
-  charts['nw']=new Chart(document.getElementById('networthChart').getContext('2d'),{
-    type:'line',
-    data:{labels, datasets:[
-      {
-        label:'Networth',
-        data:nwData,
-        borderColor:'#58a6ff',
-        backgroundColor:'rgba(88,166,255,0.07)',
-        borderWidth:2,
-        pointRadius:pr,
-        pointHoverRadius:7,
-        pointHoverBackgroundColor:'#58a6ff',
-        pointHoverBorderColor:'#e6edf3',
-        pointHoverBorderWidth:2,
-        fill:true,
-        tension:0.3,
-      },
-      ...milestoneDS
-    ]},
-    options:{
-      ...JSON.parse(JSON.stringify(baseOpts)),
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        ...baseOpts.plugins,
-        tooltip:{
-          ...baseOpts.plugins.tooltip,
-          displayColors:false,
-          filter:item=>!item.dataset.isMilestone,
-          callbacks:{
-            title:ctx=>fullLabels[ctx[0].dataIndex]||'',
-            label:ctx=>'Networth: '+moneyTip(ctx.raw)
-          }
-        }
-      },
-      scales:{...baseOpts.scales,
-        y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:moneyTick}}
-      }
-    }
+  const labels = Array.from({length:months},(_,i)=>{
+    const d = new Date();
+    d.setMonth(d.getMonth()+i);
+    return d.toLocaleDateString('en-US',{month:'short',year:'2-digit'});
   });
 
-  // ── 2. MOM % ───────────────────────────────────────────────────────────
-  destroyChart('mom');
-  const momData=rows.map(r=>r.mom);
-  charts['mom']=new Chart(document.getElementById('momChart').getContext('2d'),{
-    type:'bar',
-    data:{labels, datasets:[{
-      data:momData,
-      backgroundColor:momData.map(v=>v>=0?'rgba(63,185,80,0.7)':'rgba(248,81,73,0.7)'),
-      borderRadius:2
-    }]},
-    options:{
-      ...JSON.parse(JSON.stringify(baseOpts)),
-      interaction:{mode:'index',intersect:false},
-      plugins:{...baseOpts.plugins,tooltip:{...baseOpts.plugins.tooltip,callbacks:{
-        title:ctx=>fullLabels[ctx[0].dataIndex],
-        label:ctx=>'MOM: '+ctx.raw.toFixed(2)+'%'
-      }}},
-      scales:{...baseOpts.scales,
-        y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v.toFixed(1)+'%'}}
-      }
-    }
-  });
+  if(charts.proj) charts.proj.destroy();
 
-  // ── 3. Income vs Spend — line chart ───────────────────────────────────
-  destroyChart('inc');
-  charts['inc']=new Chart(document.getElementById('incomeChart').getContext('2d'),{
-    type:'line',
-    data:{labels, datasets:[
-      {label:'Income',data:rows.map(r=>r.tinc), borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,0.06)', borderWidth:2,pointRadius:pr,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'Spend', data:rows.map(r=>r.spend),borderColor:'#f85149',backgroundColor:'rgba(248,81,73,0.06)', borderWidth:2,pointRadius:pr,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'Saved', data:rows.map(r=>r.save), borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,0.06)',borderWidth:2,pointRadius:pr,pointHoverRadius:5,fill:false,tension:0.3},
-    ]},
-    options:{
-      ...JSON.parse(JSON.stringify(baseOpts)),
-      interaction:{mode:'index',intersect:false},
-      plugins:{...baseOpts.plugins,tooltip:{...baseOpts.plugins.tooltip,callbacks:{
-        title:ctx=>fullLabels[ctx[0].dataIndex],
-        label:ctx=>ctx.dataset.label+': '+moneyTip(ctx.raw)
-      }}},
-      scales:{...baseOpts.scales,
-        y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:moneyTick}}
-      }
-    }
-  });
-
-  // ── 4. Account Balances — running cumulative total ─────────────────────
-  // cumHYSA etc. are pre-computed all-time running totals stored on each row.
-  // Slicing rows by range shows the correct balance at each month in that range.
-  destroyChart('acct');
-  charts['acct']=new Chart(document.getElementById('accountChart').getContext('2d'),{
-    type:'line',
-    data:{labels, datasets:[
-      {label:'HYSA',    data:rows.map(r=>r.cumHYSA), borderColor:'#3fb950',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'RBHD',    data:rows.map(r=>r.cumRBHD), borderColor:'#58a6ff',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'CB',      data:rows.map(r=>r.cumCB),   borderColor:'#d29922',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'FDLTY',   data:rows.map(r=>r.cumFDLTY),borderColor:'#a371f7',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'ROTH IRA',data:rows.map(r=>r.cumROTH), borderColor:'#39d353',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'HSA',     data:rows.map(r=>r.cumHSA),  borderColor:'#56d1ff',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-    ]},
-    options:{
-      ...JSON.parse(JSON.stringify(baseOpts)),
-      interaction:{mode:'index',intersect:false},
-      plugins:{...baseOpts.plugins,tooltip:{...baseOpts.plugins.tooltip,callbacks:{
-        title:ctx=>fullLabels[ctx[0].dataIndex],
-        label:ctx=>ctx.dataset.label+': '+moneyTip(ctx.raw)
-      }}},
-      scales:{...baseOpts.scales,
-        y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:moneyTick}}
-      }
-    }
-  });
-
-  // ── 5. Portfolio Donut ─────────────────────────────────────────────────
-  destroyChart('donut');
-  const portfolio=parsePortfolio().sort((a,b)=>b.value-a.value); // biggest first
-  if(portfolio.length){
-    const total=sum(portfolio.map(p=>p.value));
-    const colors=portfolio.map((_,i)=>DONUT_COLORS[i%DONUT_COLORS.length]);
-    charts['donut']=new Chart(document.getElementById('donutChart').getContext('2d'),{
-      type:'doughnut',
+  charts.proj = new Chart(
+    document.getElementById('projectionChart'),
+    {
+      type:'line',
       data:{
-        labels:portfolio.map(p=>p.name),
-        datasets:[{data:portfolio.map(p=>p.value),backgroundColor:colors,borderColor:tipBg,borderWidth:2,hoverOffset:6}]
+        labels,
+        datasets:[
+          {label:'Conservative',data:build(0.05),borderColor:'#f85149',pointRadius:0},
+          {label:'Realistic',data:build(0.08),borderColor:'#58a6ff',pointRadius:0},
+          {label:'Aggressive',data:build(0.12),borderColor:'#3fb950',pointRadius:0},
+          {label:'$1M',data:Array(months).fill(1_000_000),
+           borderColor:'#d29922',borderDash:[6,6],pointRadius:0}
+        ]
       },
-      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-        plugins:{legend:{display:false},tooltip:{backgroundColor:tipBg,borderColor:tipBrd,borderWidth:1,
-          titleColor:'#e6edf3',bodyColor:'#8b949e',padding:10,
-          callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)} (${(ctx.raw/total*100).toFixed(1)}%)`}
-        }}
+      options:{
+        responsive:true,
+        maintainAspectRatio:false
       }
-    });
-    document.getElementById('donutLegend').innerHTML=portfolio.map((p,i)=>
-      `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>
-       <span style="color:var(--text)">${p.name}</span>
-       <span style="color:var(--muted2);margin-left:4px;">${(p.value/total*100).toFixed(0)}%</span></div>`
-    ).join('');
-  } else {
-    document.getElementById('donutLegend').innerHTML='<span style="font-size:11px;color:var(--muted2);">No portfolio data found in AF4:AJ18</span>';
+    }
+  );
+}
+
+// ---------- DEMO CALL ----------
+function initDemo(){
+
+  // replace this with your real data hook
+  const rows = window.allRows || [];
+
+  if(!rows.length){
+    console.log("No data yet");
+    return;
   }
+
+  renderKPIs(rows);
+  renderProjectionChart(rows);
 }
 
-// ── Portfolio parser ───────────────────────────────────────────────────────
-function parsePortfolio(){
-  const rows=window._keyInfoRows||[];
-  if(rows.length<2) return [];
-  const hIdx=rows.findIndex(r=>r.some(c=>/bucket|name|account/i.test(String(c))));
-  if(hIdx<0) return [];
-  const headers=rows[hIdx].map(h=>String(h).toLowerCase());
-  const curIdx=headers.findIndex(h=>h.includes('current'));
-  if(curIdx<0) return [];
-  return rows.slice(hIdx+1)
-    .filter(r=>r[0]&&!/networth|total/i.test(String(r[0]))&&parseMoney(r[curIdx])>0)
-    .map(r=>({name:String(r[0]),value:parseMoney(r[curIdx])}));
-}
-
-// ── Annual Summary ─────────────────────────────────────────────────────────
-function renderAnnualSummary(){
-  const years=[...new Set(allRows.map(r=>r.year))].sort();
-  const summaries=years.map(yr=>{
-    const rows=allRows.filter(r=>r.year===yr);
-    const totalInc  =sum(rows.map(r=>r.tinc));
-    const totalSpend=sum(rows.map(r=>r.spend));
-    const totalSaved=sum(rows.map(r=>r.save));
-    const spendRate =totalInc>0?(totalSpend/totalInc*100):0;
-    const saveRate  =totalInc>0?(totalSaved/totalInc*100):0;
-    const endNW     =rows[rows.length-1].networth;
-    return{yr,totalInc,totalSpend,totalSaved,spendRate,saveRate,endNW};
-  });
-  document.getElementById('annualBody').innerHTML=[...summaries].reverse().map((s,i,arr)=>{
-    const prev=arr[i+1];
-    const yoy=prev?((s.endNW-prev.endNW)/prev.endNW*100):null;
-    return`<tr>
-      <td>${s.yr}</td>
-      <td class="amt">${fmt(s.totalInc)}</td>
-      <td class="neg">${fmt(s.totalSpend)}</td>
-      <td class="${s.spendRate>=70?'neg':s.spendRate>=50?'amt':'pos'}">${s.spendRate.toFixed(1)}%</td>
-      <td class="pos">${fmt(s.totalSaved)}</td>
-      <td class="${s.saveRate>=30?'pos':s.saveRate>=15?'amt':'neg'}">${s.saveRate.toFixed(1)}%</td>
-      <td class="amt">${fmt(s.endNW)}</td>
-      <td class="${yoy===null?'':(yoy>=0?'pos':'neg')}">${yoy!==null?fmtPct(yoy):'—'}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ── Monthly Table ──────────────────────────────────────────────────────────
-function renderTable(){
-  const src=(!activeTableYear||activeTableYear==='all')
-    ?allRows : allRows.filter(r=>r.year===activeTableYear);
-  document.getElementById('tableBody').innerHTML=[...src].reverse().map(r=>{
-    const momC=r.mom>0?'pos':r.mom<0?'neg':'';
-    const hn=r.hysa-r.hysa_wd, rn=r.rbhd-r.rbhd_wd, cn=r.cb-r.cb_wd, fn=r.fdlty-r.fdlty_wd;
-    return`<tr>
-      <td>${r.year}</td><td>${r.month}</td>
-      <td class="amt">${fmt(r.tinc)}</td>
-      <td class="neg">${fmt(r.spend)}</td>
-      <td class="pos">${fmt(r.save)}</td>
-      <td class="${hn<0?'neg':''}">${fmtNet(hn)}</td>
-      <td class="${rn<0?'neg':''}">${fmtNet(rn)}</td>
-      <td class="${cn<0?'neg':''}">${fmtNet(cn)}</td>
-      <td class="${fn<0?'neg':''}">${fmtNet(fn)}</td>
-      <td>${fmt(r.roth)}</td><td>${fmt(r.hsa)}</td>
-      <td>${fmt(r.rent)}</td><td>${fmt(r.carloan)}</td>
-      <td class="amt">${fmt(r.networth)}</td>
-      <td class="${momC}">${fmtPct(r.mom)}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ── Key Info ───────────────────────────────────────────────────────────────
-function renderKeyInfo(){
-  const tile=document.getElementById('keyInfoTile');
-  const rows=window._keyInfoRows||[];
-  if(!rows.length||activeYear!=='all'){tile.style.display='none';return;}
-  const tableRows=rows.map(r=>r.map(c=>(c||'').trim())).filter(r=>r.some(c=>c!==''));
-  if(!tableRows.length){tile.style.display='none';return;}
-  const html=tableRows.map((cells,i)=>{
-    const tag=i===0?'th':'td';
-    const s=i===0
-      ?'background:var(--card);color:var(--muted);font-size:11px;font-weight:500;padding:8px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;'
-      :'padding:7px 14px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-light);white-space:nowrap;';
-    return`<tr>${cells.map(c=>`<${tag} style="${s}">${c}</${tag}>`).join('')}</tr>`;
-  }).join('');
-  tile.style.display='block';
-  tile.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Key Info</span>
-      <span style="font-size:11px;color:var(--muted2);font-family:var(--mono);">AF4:AJ18</span>
-    </div>
-    <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);">${html}</table></div>
-  </div>`;
-}
-
-// ── UI helpers ─────────────────────────────────────────────────────────────
-function toggleSetup(){
-  const body=document.getElementById('setupBody'),arrow=document.getElementById('setupArrow');
-  const open=body.style.display==='none';
-  body.style.display=open?'block':'none';
-  arrow.style.transform=open?'rotate(180deg)':'rotate(0deg)';
-}
-document.addEventListener('DOMContentLoaded',loadSaved);
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&['sheetId','apiKey'].includes(document.activeElement.id)) loadData();
-});
-document.getElementById('rememberMe').addEventListener('change',function(){
-  if(!this.checked) clearCredentials();
-});
+window.initDemo = initDemo;
 </script>
+
 </body>
 </html>
