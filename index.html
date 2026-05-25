@@ -96,6 +96,29 @@
   tbody td:first-child{text-align:left;color:var(--muted);}
   tbody td:nth-child(2){text-align:left;}
   .pos{color:var(--green);}.neg{color:var(--red);}.amt{color:var(--text);}
+
+  /* Goal Tile */
+  .goal-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:16px;}
+  .goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .goal-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
+  .goal-pct{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--blue);}
+  .goal-sub{font-size:11px;color:var(--muted2);font-family:var(--mono);}
+  .progress-track{width:100%;height:10px;background:var(--card);border-radius:99px;overflow:hidden;margin-bottom:6px;}
+  .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#58a6ff,#a371f7);transition:width 0.8s ease;}
+  .goal-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;}
+  .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;}
+  .scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .scenario-card.conservative::before{background:#6e7681;}
+  .scenario-card.realistic::before{background:var(--blue);}
+  .scenario-card.ambitious::before{background:var(--green);}
+  .scenario-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:8px;}
+  .scenario-card.conservative .scenario-label{color:#6e7681;}
+  .scenario-card.realistic .scenario-label{color:var(--blue);}
+  .scenario-card.ambitious .scenario-label{color:var(--green);}
+  .scenario-date{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px;}
+  .scenario-detail{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.7;}
+  .scenario-rate{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}}
   #dashboard{display:none;}
 
   @media(max-width:1100px){.charts-row2{grid-template-columns:1fr 1fr;}}
@@ -194,6 +217,9 @@
         <div class="kpi-sub" id="kpiMomSub">—</div>
       </div>
     </div>
+
+    <!-- Goal Tile -->
+    <div id="goalTile"></div>
 
     <!-- Chart Range Filter -->
     <div class="range-bar">
@@ -469,6 +495,7 @@ function applyFilter(){
   renderTable();
   renderAnnualSummary();
   renderKeyInfo();
+  renderGoalTile();
 }
 
 // ── Table year filter ──────────────────────────────────────────────────────
@@ -795,6 +822,109 @@ function renderKeyInfo(){
       <span style="font-size:11px;color:var(--muted2);font-family:var(--mono);">AF4:AJ18</span>
     </div>
     <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);">${html}</table></div>
+  </div>`;
+}
+
+
+// ── Goal Tile ──────────────────────────────────────────────────────────────
+function computeWeightedMOM(rows, decay=0.94) {
+  // Exponential decay: most recent month gets weight 1.0, older months decay
+  // More years of data = older data gets proportionally less weight (dynamic)
+  const vals = rows.map(r=>r.mom/100).filter(isFinite);
+  const n = vals.length;
+  if(!n) return {rate:0, stdDev:0};
+
+  let wSum=0, wTotal=0;
+  for(let i=0;i<n;i++){
+    const age = n-1-i;          // 0 = most recent
+    const w   = Math.pow(decay, age);
+    wSum  += vals[i]*w;
+    wTotal+= w;
+  }
+  const wRate = wSum/wTotal;
+
+  // Std dev from recent 24 months for scenario spread
+  const recent = vals.slice(-24);
+  const rAvg   = recent.reduce((a,b)=>a+b,0)/recent.length;
+  const stdDev = Math.sqrt(recent.reduce((s,v)=>s+Math.pow(v-rAvg,2),0)/recent.length);
+
+  return {rate:wRate, stdDev};
+}
+
+function monthsToTarget(currentNW, monthlyRate, target=1000000) {
+  if(monthlyRate<=0||currentNW>=target) return null;
+  return Math.ceil(Math.log(target/currentNW)/Math.log(1+monthlyRate));
+}
+
+function addMonths(lastRow, n) {
+  const mIdx = MONTH_NAMES.indexOf(lastRow.month);
+  const yr   = parseInt(lastRow.year);
+  const totalM = mIdx + n;
+  const month  = MONTH_NAMES[totalM%12];
+  const year   = yr + Math.floor(totalM/12);
+  return {month, year};
+}
+
+function renderGoalTile() {
+  const tile = document.getElementById('goalTile');
+  if(!allRows.length){ tile.innerHTML=''; return; }
+
+  const TARGET = 1000000;
+  const lastNW = allRows[allRows.length-1].networth;
+  const pct    = Math.min((lastNW/TARGET)*100, 100);
+  const remaining = TARGET - lastNW;
+
+  // Weighted MOM using ALL rows (full history, recent-weighted)
+  const {rate:wRate, stdDev} = computeWeightedMOM(allRows);
+
+  // Three scenarios
+  const rates = {
+    conservative: Math.max(wRate - stdDev*0.6, 0.0008), // floor 0.08%/mo
+    realistic:    wRate,
+    ambitious:    wRate + stdDev*0.5,
+  };
+
+  const lastRow = allRows[allRows.length-1];
+
+  function scenarioHTML(key, label, cls) {
+    const r    = rates[key];
+    const mos  = monthsToTarget(lastNW, r);
+    if(!mos) return `<div class="scenario-card ${cls}">
+      <div class="scenario-label">${label}</div>
+      <div class="scenario-date" style="color:var(--green)">Already there!</div>
+    </div>`;
+    const {month:tMo, year:tYr} = addMonths(lastRow, mos);
+    const yrs  = (mos/12).toFixed(1);
+    const rPct = (r*100).toFixed(2);
+    return `<div class="scenario-card ${cls}">
+      <div class="scenario-label">${label}</div>
+      <div class="scenario-date">${tMo.slice(0,3)} ${tYr}</div>
+      <div class="scenario-detail">${mos} months · ${yrs} yrs away</div>
+      <div class="scenario-rate">Assumes ${rPct}%/mo growth</div>
+    </div>`;
+  }
+
+  tile.innerHTML = `
+  <div class="goal-tile">
+    <div class="goal-header">
+      <div>
+        <div class="goal-title">&#127919; $1M Networth Goal</div>
+        <div class="goal-sub" style="margin-top:4px;">${fmt(lastNW)} of ${fmt(TARGET)} · ${fmt(remaining)} to go</div>
+      </div>
+      <div class="goal-pct">${pct.toFixed(1)}%</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:${pct.toFixed(1)}%"></div>
+    </div>
+    <div class="goal-sub" style="margin-bottom:4px;">
+      Weighted MOM rate: <strong style="color:var(--text)">${(wRate*100).toFixed(2)}%</strong>
+      &nbsp;(exponential decay · recent months weighted higher)
+    </div>
+    <div class="goal-scenarios">
+      ${scenarioHTML('conservative','Conservative','conservative')}
+      ${scenarioHTML('realistic',   'Realistic',   'realistic')}
+      ${scenarioHTML('ambitious',   'Ambitious',   'ambitious')}
+    </div>
   </div>`;
 }
 
