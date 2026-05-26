@@ -103,22 +103,45 @@
   .goal-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
   .goal-pct{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--blue);}
   .goal-sub{font-size:11px;color:var(--muted2);font-family:var(--mono);}
-  .progress-track{width:100%;height:10px;background:var(--card);border-radius:99px;overflow:hidden;margin-bottom:6px;}
-  .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#58a6ff,#a371f7);transition:width 0.8s ease;}
+  
+  /* Progress bar with milestones and hover */
+  .progress-track{position:relative;width:100%;height:10px;background:var(--card);border-radius:99px;margin-bottom:6px;cursor:pointer;}
+  .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#58a6ff,#a371f7);transition:width 0.8s ease;pointer-events:none;}
+  .milestone-mark{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(110,118,129,0.35);pointer-events:none;}
+  .milestone-mark.major{width:2px;background:rgba(110,118,129,0.5);}
+  .progress-tooltip{position:absolute;top:-34px;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:5px 10px;border-radius:5px;font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+  .milestone-labels{display:flex;justify-content:space-between;margin-bottom:16px;font-size:10px;color:var(--muted2);font-family:var(--mono);}
+  
+  /* Scenario cards - clickable */
   .goal-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;}
-  .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;}
+  .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.15s;}
+  .scenario-card:hover{border-color:var(--blue);transform:translateY(-2px);}
+  .scenario-card.selected{border-width:2px;background:rgba(88,166,255,0.08);}
   .scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
   .scenario-card.conservative::before{background:#6e7681;}
   .scenario-card.realistic::before{background:var(--blue);}
   .scenario-card.ambitious::before{background:var(--green);}
-  .scenario-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:8px;}
+  .scenario-card.selected::before{height:3px;}
+  .scenario-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
   .scenario-card.conservative .scenario-label{color:#6e7681;}
   .scenario-card.realistic .scenario-label{color:var(--blue);}
   .scenario-card.ambitious .scenario-label{color:var(--green);}
+  .scenario-radio{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--card);transition:all 0.15s;}
+  .scenario-card.selected .scenario-radio{border-color:var(--blue);background:var(--blue);}
   .scenario-date{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px;}
   .scenario-detail{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.7;}
   .scenario-rate{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}}
+  
+  /* Selected scenario details */
+  .selected-details{margin-top:16px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:8px;}
+  .selected-details-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
+  .milestone-timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
+  .milestone-item{display:flex;align-items:center;gap:8px;font-size:11px;font-family:var(--mono);color:var(--text);}
+  .milestone-item .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+  .milestone-item .value{color:var(--green);font-weight:500;}
+  .milestone-item .date{color:var(--muted2);}
+  
+  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}.milestone-timeline{grid-template-columns:1fr;}}
   #dashboard{display:none;}
 
   @media(max-width:1100px){.charts-row2{grid-template-columns:1fr 1fr;}}
@@ -827,105 +850,222 @@ function renderKeyInfo(){
 
 
 // ── Goal Tile ──────────────────────────────────────────────────────────────
-function computeWeightedMOM(rows, decay=0.94) {
-  // Exponential decay: most recent month gets weight 1.0, older months decay
-  // More years of data = older data gets proportionally less weight (dynamic)
-  const vals = rows.map(r=>r.mom/100).filter(isFinite);
-  const n = vals.length;
-  if(!n) return {rate:0, stdDev:0};
+//
+// Projection model: two-component annuity formula
+//   FV = PV*(1+r)^n + PMT*((1+r)^n - 1)/r
+//
+// Where:
+//   PV  = current networth
+//   r   = monthly investment return rate (annual rate / 12)
+//   n   = months to project
+//   PMT = avg monthly savings (dynamic from recent 12 months of SAVE data)
+//
+// Why not use MOM%?
+//   Historical MOM% is inflated by early months when networth was tiny
+//   (~$2,748). Even with decay weighting, those rates don't reflect realistic
+//   forward growth at $267k+ scale.
+//
+// Annual return assumptions per scenario:
+//   Conservative : 5%  (underperforming markets / flat period)
+//   Realistic    : 9%  (close to S&P500 long-run avg, suits VOO-heavy portfolio)
+//   Ambitious    : 14% (strong bull market / crypto upside)
+//
+// Monthly savings (PMT) is dynamic: avg of last 12 months SAVE column.
+// As you add more data, the PMT updates automatically.
 
+function addMonths(lastRow, n) {
+  const mIdx   = MONTH_NAMES.indexOf(lastRow.month);
+  const yr     = parseInt(lastRow.year);
+  const totalM = mIdx + n;
+  return { month: MONTH_NAMES[totalM % 12], year: yr + Math.floor(totalM / 12) };
+}
+
+// Standard annuity FV formula — months to reach target
+function monthsToTargetAnnuity(pv, annualRate, pmt, target=1000000) {
+  if(pv >= target) return 0;
+  const r = annualRate / 12;          // monthly rate
+  if(r <= 0) {
+    // No return — pure savings
+    return pmt > 0 ? Math.ceil((target - pv) / pmt) : null;
+  }
+  // Solve: target = pv*(1+r)^n + pmt*((1+r)^n - 1)/r
+  // Let x = (1+r)^n  →  target = (pv + pmt/r)*x - pmt/r
+  // x = (target + pmt/r) / (pv + pmt/r)
+  const x = (target + pmt/r) / (pv + pmt/r);
+  if(x <= 1) return null; // never reaches target at this rate
+  return Math.ceil(Math.log(x) / Math.log(1 + r));
+}
+
+// Observed weighted MOM (shown as context, not used for projection)
+function computeWeightedMOM(rows, decay=0.94) {
+  const vals = rows.map(r=>r.mom/100).filter(isFinite);
+  const n    = vals.length;
+  if(!n) return 0;
   let wSum=0, wTotal=0;
   for(let i=0;i<n;i++){
-    const age = n-1-i;          // 0 = most recent
-    const w   = Math.pow(decay, age);
+    const w = Math.pow(decay, n-1-i);
     wSum  += vals[i]*w;
     wTotal+= w;
   }
-  const wRate = wSum/wTotal;
-
-  // Std dev from recent 24 months for scenario spread
-  const recent = vals.slice(-24);
-  const rAvg   = recent.reduce((a,b)=>a+b,0)/recent.length;
-  const stdDev = Math.sqrt(recent.reduce((s,v)=>s+Math.pow(v-rAvg,2),0)/recent.length);
-
-  return {rate:wRate, stdDev};
+  return wSum/wTotal;
 }
 
-function monthsToTarget(currentNW, monthlyRate, target=1000000) {
-  if(monthlyRate<=0||currentNW>=target) return null;
-  return Math.ceil(Math.log(target/currentNW)/Math.log(1+monthlyRate));
-}
-
-function addMonths(lastRow, n) {
-  const mIdx = MONTH_NAMES.indexOf(lastRow.month);
-  const yr   = parseInt(lastRow.year);
-  const totalM = mIdx + n;
-  const month  = MONTH_NAMES[totalM%12];
-  const year   = yr + Math.floor(totalM/12);
-  return {month, year};
-}
+// Global state for selected scenario
+let selectedScenario = 'realistic';
 
 function renderGoalTile() {
   const tile = document.getElementById('goalTile');
   if(!allRows.length){ tile.innerHTML=''; return; }
 
-  const TARGET = 1000000;
-  const lastNW = allRows[allRows.length-1].networth;
-  const pct    = Math.min((lastNW/TARGET)*100, 100);
-  const remaining = TARGET - lastNW;
-
-  // Weighted MOM using ALL rows (full history, recent-weighted)
-  const {rate:wRate, stdDev} = computeWeightedMOM(allRows);
-
-  // Three scenarios
-  const rates = {
-    conservative: Math.max(wRate - stdDev*0.6, 0.0008), // floor 0.08%/mo
-    realistic:    wRate,
-    ambitious:    wRate + stdDev*0.5,
-  };
-
+  const TARGET  = 1000000;
+  const lastNW  = allRows[allRows.length-1].networth;
+  const pct     = Math.min((lastNW/TARGET)*100, 100);
   const lastRow = allRows[allRows.length-1];
 
-  function scenarioHTML(key, label, cls) {
-    const r    = rates[key];
-    const mos  = monthsToTarget(lastNW, r);
-    if(!mos) return `<div class="scenario-card ${cls}">
-      <div class="scenario-label">${label}</div>
+  // Dynamic PMT: avg of last 12 months SAVE (updates as more data added)
+  const recent12 = allRows.slice(-12);
+  const avgSave  = recent12.reduce((s,r)=>s+r.save, 0) / recent12.length;
+
+  // Observed weighted MOM (context only)
+  const wMOM = computeWeightedMOM(allRows);
+
+  // Annual return rates per scenario
+  const scenarios = [
+    { key:'conservative', label:'Conservative', cls:'conservative',
+      annualRate:0.05, pmtFactor:0.9,
+      note:'5% annual return · markets underperform' },
+    { key:'realistic',    label:'Realistic',    cls:'realistic',
+      annualRate:0.09, pmtFactor:1.0,
+      note:'9% annual return · S&P500 long-run avg' },
+    { key:'ambitious',    label:'Ambitious',    cls:'ambitious',
+      annualRate:0.14, pmtFactor:1.1,
+      note:'14% annual return · strong bull market' },
+  ];
+
+  // Milestone markers at 12.5% intervals
+  const milestones = [12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
+  const milestonesHTML = milestones.map(p => {
+    const isMajor = p % 25 === 0; // 25%, 50%, 75%, 100%
+    return `<div class="milestone-mark ${isMajor?'major':''}" style="left:${p}%;" 
+                 title="$${(p*10).toFixed(p===12.5||p===37.5||p===62.5||p===87.5?1:0)}k"></div>`;
+  }).join('');
+
+  const milestoneLabels = [0, 125, 250, 375, 500, 625, 750, 875, 1000].map((v,i) => {
+    const show = i % 2 === 0 || v === 1000; // show every other + always $1M
+    return show ? `<span>$${v}k</span>` : '<span></span>';
+  }).join('');
+
+  function scenarioHTML(sc) {
+    const pmt  = avgSave * sc.pmtFactor;
+    const mos  = monthsToTargetAnnuity(lastNW, sc.annualRate, pmt);
+    const isSelected = selectedScenario === sc.key;
+    
+    if(mos === 0) return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
+      <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
       <div class="scenario-date" style="color:var(--green)">Already there!</div>
     </div>`;
+    
+    if(!mos) return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
+      <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
+      <div class="scenario-date" style="color:var(--red)">Not reachable</div>
+      <div class="scenario-detail">Increase savings or return rate</div>
+    </div>`;
+    
     const {month:tMo, year:tYr} = addMonths(lastRow, mos);
-    const yrs  = (mos/12).toFixed(1);
-    const rPct = (r*100).toFixed(2);
-    return `<div class="scenario-card ${cls}">
-      <div class="scenario-label">${label}</div>
+    const yrs = (mos/12).toFixed(1);
+    
+    return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
+      <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
       <div class="scenario-date">${tMo.slice(0,3)} ${tYr}</div>
       <div class="scenario-detail">${mos} months · ${yrs} yrs away</div>
-      <div class="scenario-rate">Assumes ${rPct}%/mo growth</div>
+      <div class="scenario-rate">${sc.note}<br>+ ${fmt(Math.round(pmt))}/mo savings</div>
     </div>`;
   }
+
+  // Compute future milestones for selected scenario
+  const selectedSc = scenarios.find(s => s.key === selectedScenario);
+  const futureMilestones = [375000, 500000, 750000, 1000000]
+    .filter(m => m > lastNW)
+    .map(target => {
+      const pmt = avgSave * selectedSc.pmtFactor;
+      const mos = monthsToTargetAnnuity(lastNW, selectedSc.annualRate, pmt, target);
+      if(!mos) return null;
+      const {month, year} = addMonths(lastRow, mos);
+      return { value: target, month, year, months: mos };
+    })
+    .filter(Boolean);
+
+  const selectedDetailsHTML = futureMilestones.length ? `
+    <div class="selected-details">
+      <div class="selected-details-title">Selected: ${selectedSc.label} Scenario — Future Milestones</div>
+      <div class="milestone-timeline">
+        ${futureMilestones.map(m => `
+          <div class="milestone-item">
+            <div class="dot"></div>
+            <span class="value">${fmt(m.value)}</span>
+            <span class="date">→ ${m.month.slice(0,3)} ${m.year}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : '';
 
   tile.innerHTML = `
   <div class="goal-tile">
     <div class="goal-header">
       <div>
         <div class="goal-title">&#127919; $1M Networth Goal</div>
-        <div class="goal-sub" style="margin-top:4px;">${fmt(lastNW)} of ${fmt(TARGET)} · ${fmt(remaining)} to go</div>
+        <div class="goal-sub" style="margin-top:4px;">
+          ${fmt(lastNW)} of ${fmt(TARGET)} &nbsp;·&nbsp; ${fmt(TARGET-lastNW)} to go
+          &nbsp;·&nbsp; observed MOM: <span style="color:var(--muted)">${(wMOM*100).toFixed(2)}%</span>
+          <span style="color:var(--muted2);margin-left:4px;">(inflated by early low-base — not used)</span>
+        </div>
       </div>
       <div class="goal-pct">${pct.toFixed(1)}%</div>
     </div>
-    <div class="progress-track">
+    <div class="progress-track" id="goalProgressTrack">
       <div class="progress-fill" style="width:${pct.toFixed(1)}%"></div>
+      ${milestonesHTML}
+      <div class="progress-tooltip" id="goalProgressTooltip"></div>
     </div>
-    <div class="goal-sub" style="margin-bottom:4px;">
-      Weighted MOM rate: <strong style="color:var(--text)">${(wRate*100).toFixed(2)}%</strong>
-      &nbsp;(exponential decay · recent months weighted higher)
+    <div class="milestone-labels">${milestoneLabels}</div>
+    <div class="goal-sub" style="margin-bottom:16px;">
+      Projection: <strong style="color:var(--text)">annuity formula</strong>
+      &nbsp;·&nbsp; PMT = ${fmt(Math.round(avgSave))}/mo
+      <span style="color:var(--muted2)">(last 12mo avg · updates dynamically)</span>
     </div>
     <div class="goal-scenarios">
-      ${scenarioHTML('conservative','Conservative','conservative')}
-      ${scenarioHTML('realistic',   'Realistic',   'realistic')}
-      ${scenarioHTML('ambitious',   'Ambitious',   'ambitious')}
+      ${scenarios.map(scenarioHTML).join('')}
     </div>
+    ${selectedDetailsHTML}
   </div>`;
+
+  // Attach hover handlers
+  attachProgressHover();
+}
+
+function selectScenario(key) {
+  selectedScenario = key;
+  renderGoalTile();
+}
+
+function attachProgressHover() {
+  const track = document.getElementById('goalProgressTrack');
+  const tooltip = document.getElementById('goalProgressTooltip');
+  if(!track || !tooltip) return;
+  
+  track.addEventListener('mousemove', (e) => {
+    const rect = track.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const val = (pct / 100) * 1000000;
+    tooltip.textContent = fmt(val) + ' (' + pct.toFixed(1) + '%)';
+    tooltip.style.left = x + 'px';
+    tooltip.style.display = 'block';
+  });
+  
+  track.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
 }
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
