@@ -1,334 +1,658 @@
-bash
-python3 << 'PYEOF'
-with open('/mnt/user-data/outputs/index.html', 'r') as f:
-    content = f.read()
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Financial Dashboard</title>
 
-# ── 1. Update CSS for milestones, hover tooltip, and scenario selection ────
-old_css_goal = """  /* Goal Tile */
-  .goal-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:16px;}
-  .goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
-  .goal-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
-  .goal-pct{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--blue);}
-  .goal-sub{font-size:11px;color:var(--muted2);font-family:var(--mono);}
-  .progress-track{width:100%;height:10px;background:var(--card);border-radius:99px;overflow:hidden;margin-bottom:6px;}
-  .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#58a6ff,#a371f7);transition:width 0.8s ease;}
-  .goal-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;}
-  .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;}
-  .scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-  .scenario-card.conservative::before{background:#6e7681;}
-  .scenario-card.realistic::before{background:var(--blue);}
-  .scenario-card.ambitious::before{background:var(--green);}
-  .scenario-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:8px;}
-  .scenario-card.conservative .scenario-label{color:#6e7681;}
-  .scenario-card.realistic .scenario-label{color:var(--blue);}
-  .scenario-card.ambitious .scenario-label{color:var(--green);}
-  .scenario-date{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px;}
-  .scenario-detail{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.7;}
-  .scenario-rate{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}}"""
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
-new_css_goal = """  /* Goal Tile */
-  .goal-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:16px;}
-  .goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
-  .goal-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
-  .goal-pct{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--blue);}
-  .goal-sub{font-size:11px;color:var(--muted2);font-family:var(--mono);}
-  
-  /* Progress bar with milestones and hover */
-  .progress-track{position:relative;width:100%;height:10px;background:var(--card);border-radius:99px;margin-bottom:6px;cursor:pointer;}
-  .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#58a6ff,#a371f7);transition:width 0.8s ease;pointer-events:none;}
-  .milestone-mark{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(110,118,129,0.35);pointer-events:none;}
-  .milestone-mark.major{width:2px;background:rgba(110,118,129,0.5);}
-  .progress-tooltip{position:absolute;top:-34px;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:5px 10px;border-radius:5px;font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
-  .milestone-labels{display:flex;justify-content:space-between;margin-bottom:16px;font-size:10px;color:var(--muted2);font-family:var(--mono);}
-  
-  /* Scenario cards - clickable */
-  .goal-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;}
-  .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.15s;}
-  .scenario-card:hover{border-color:var(--blue);transform:translateY(-2px);}
-  .scenario-card.selected{border-width:2px;background:rgba(88,166,255,0.08);}
-  .scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-  .scenario-card.conservative::before{background:#6e7681;}
-  .scenario-card.realistic::before{background:var(--blue);}
-  .scenario-card.ambitious::before{background:var(--green);}
-  .scenario-card.selected::before{height:3px;}
-  .scenario-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-  .scenario-card.conservative .scenario-label{color:#6e7681;}
-  .scenario-card.realistic .scenario-label{color:var(--blue);}
-  .scenario-card.ambitious .scenario-label{color:var(--green);}
-  .scenario-radio{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--card);transition:all 0.15s;}
-  .scenario-card.selected .scenario-radio{border-color:var(--blue);background:var(--blue);}
-  .scenario-date{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px;}
-  .scenario-detail{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.7;}
-  .scenario-rate{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-  
-  /* Selected scenario details */
-  .selected-details{margin-top:16px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:8px;}
-  .selected-details-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
-  .milestone-timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
-  .milestone-item{display:flex;align-items:center;gap:8px;font-size:11px;font-family:var(--mono);color:var(--text);}
-  .milestone-item .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;}
-  .milestone-item .value{color:var(--green);font-weight:500;}
-  .milestone-item .date{color:var(--muted2);}
-  
-  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}.milestone-timeline{grid-template-columns:1fr;}}"""
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-content = content.replace(old_css_goal, new_css_goal)
+<style>
+*,*::before,*::after{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-# ── 2. Update JS to add milestones, hover, and selection ───────────────────
-old_goal_render = """function renderGoalTile() {
-  const tile = document.getElementById('goalTile');
-  if(!allRows.length){ tile.innerHTML=''; return; }
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --card:#21262d;
+  --border:#30363d;
+  --border-light:#21262d;
 
-  const TARGET  = 1000000;
-  const lastNW  = allRows[allRows.length-1].networth;
-  const pct     = Math.min((lastNW/TARGET)*100, 100);
-  const lastRow = allRows[allRows.length-1];
+  --green:#3fb950;
+  --red:#f85149;
+  --amber:#d29922;
+  --blue:#58a6ff;
+  --purple:#a371f7;
 
-  // Dynamic PMT: avg of last 12 months SAVE (updates as more data added)
-  const recent12 = allRows.slice(-12);
-  const avgSave  = recent12.reduce((s,r)=>s+r.save, 0) / recent12.length;
+  --text:#e6edf3;
+  --muted:#8b949e;
+  --muted2:#6e7681;
 
-  // Observed weighted MOM (context only)
-  const wMOM = computeWeightedMOM(allRows);
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Inter',sans-serif;
+}
 
-  // Annual return rates per scenario
-  const scenarios = [
-    { key:'conservative', label:'Conservative', cls:'conservative',
-      annualRate:0.05, pmtFactor:0.9,
-      note:'5% annual return · markets underperform' },
-    { key:'realistic',    label:'Realistic',    cls:'realistic',
-      annualRate:0.09, pmtFactor:1.0,
-      note:'9% annual return · S&P500 long-run avg' },
-    { key:'ambitious',    label:'Ambitious',    cls:'ambitious',
-      annualRate:0.14, pmtFactor:1.1,
-      note:'14% annual return · strong bull market' },
-  ];
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+  padding:24px;
+}
 
-  function scenarioHTML(sc) {
-    const pmt  = avgSave * sc.pmtFactor;
-    const mos  = monthsToTargetAnnuity(lastNW, sc.annualRate, pmt);
-    if(mos === 0) return `<div class="scenario-card ${sc.cls}">
-      <div class="scenario-label">${sc.label}</div>
-      <div class="scenario-date" style="color:var(--green)">Already there!</div>
-    </div>`;
-    if(!mos) return `<div class="scenario-card ${sc.cls}">
-      <div class="scenario-label">${sc.label}</div>
-      <div class="scenario-date" style="color:var(--red)">Not reachable</div>
-      <div class="scenario-detail">Increase savings or return rate</div>
-    </div>`;
-    const {month:tMo, year:tYr} = addMonths(lastRow, mos);
-    const yrs = (mos/12).toFixed(1);
-    const moPct = (sc.annualRate/12*100).toFixed(2);
-    return `<div class="scenario-card ${sc.cls}">
-      <div class="scenario-label">${sc.label}</div>
-      <div class="scenario-date">${tMo.slice(0,3)} ${tYr}</div>
-      <div class="scenario-detail">${mos} months · ${yrs} yrs away</div>
-      <div class="scenario-rate">${sc.note}<br>+ ${fmt(Math.round(pmt))}/mo savings</div>
-    </div>`;
+.container{
+  max-width:1400px;
+  margin:0 auto;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:18px;
+}
+
+.title{
+  font-size:22px;
+  font-weight:600;
+  margin-bottom:18px;
+}
+
+.goal-title{
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.goal-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.goal-percent{
+  font-size:26px;
+  font-family:var(--mono);
+  color:var(--blue);
+}
+
+.goal-sub{
+  font-size:12px;
+  color:var(--muted2);
+  font-family:var(--mono);
+  margin-top:6px;
+  line-height:1.6;
+}
+
+/* Progress */
+
+.progress-track{
+  position:relative;
+  width:100%;
+  height:12px;
+  background:var(--card);
+  border-radius:999px;
+  margin-top:20px;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.progress-fill{
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  background:linear-gradient(90deg,#58a6ff,#a371f7);
+  border-radius:999px;
+}
+
+.milestone-mark{
+  position:absolute;
+  top:-2px;
+  bottom:-2px;
+  width:1px;
+  background:rgba(255,255,255,0.2);
+}
+
+.milestone-mark.major{
+  width:2px;
+  background:rgba(255,255,255,0.45);
+}
+
+.progress-tooltip{
+  position:absolute;
+  top:-38px;
+  transform:translateX(-50%);
+  background:var(--card);
+  border:1px solid var(--border);
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:11px;
+  font-family:var(--mono);
+  display:none;
+  white-space:nowrap;
+}
+
+.milestone-labels{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:10px;
+  color:var(--muted2);
+  font-family:var(--mono);
+}
+
+/* Scenario Cards */
+
+.goal-scenarios{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:24px;
+}
+
+.scenario-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+  position:relative;
+}
+
+.scenario-card:hover{
+  transform:translateY(-2px);
+  border-color:var(--blue);
+}
+
+.scenario-card.selected{
+  border:2px solid var(--blue);
+  background:rgba(88,166,255,0.08);
+}
+
+.scenario-card::before{
+  content:'';
+  position:absolute;
+  left:0;
+  top:0;
+  right:0;
+  height:2px;
+}
+
+.scenario-card.conservative::before{
+  background:#6e7681;
+}
+
+.scenario-card.realistic::before{
+  background:var(--blue);
+}
+
+.scenario-card.ambitious::before{
+  background:var(--green);
+}
+
+.scenario-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  font-weight:600;
+}
+
+.scenario-radio{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  border:2px solid var(--border);
+}
+
+.scenario-card.selected .scenario-radio{
+  background:var(--blue);
+  border-color:var(--blue);
+}
+
+.scenario-date{
+  font-size:22px;
+  font-family:var(--mono);
+  margin-bottom:6px;
+}
+
+.scenario-detail{
+  color:var(--muted2);
+  font-size:12px;
+  font-family:var(--mono);
+}
+
+.scenario-rate{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.6;
+  font-family:var(--mono);
+}
+
+.selected-details{
+  margin-top:20px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+}
+
+.selected-details-title{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+
+.milestone-timeline{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+}
+
+.milestone-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:var(--mono);
+  font-size:12px;
+}
+
+.dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--blue);
+}
+
+.value{
+  color:var(--green);
+  font-weight:500;
+}
+
+.date{
+  color:var(--muted2);
+}
+
+@media(max-width:800px){
+  .goal-scenarios{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<div class="goal-top">
+
+<div>
+<div class="goal-title">🎯 $1M Networth Goal</div>
+
+<div class="goal-sub" id="goalSub"></div>
+</div>
+
+<div class="goal-percent" id="goalPercent"></div>
+
+</div>
+
+<div class="progress-track" id="goalTrack">
+
+<div class="progress-fill" id="goalFill"></div>
+
+<div class="progress-tooltip" id="goalTooltip"></div>
+
+</div>
+
+<div class="milestone-labels">
+<span>$0</span>
+<span>$250k</span>
+<span>$500k</span>
+<span>$750k</span>
+<span>$1M</span>
+</div>
+
+<div class="goal-scenarios" id="scenarioContainer"></div>
+
+<div id="selectedDetails"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const MONTH_NAMES = [
+'January','February','March','April','May','June',
+'July','August','September','October','November','December'
+];
+
+function fmt(n){
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function computeWeightedMOM(rows, decay=0.94){
+
+  const vals = rows.map(r=>r.mom/100).filter(v=>isFinite(v));
+
+  if(!vals.length){
+    return { rate:0, stdDev:0 };
   }
 
-  tile.innerHTML = `
-  <div class="goal-tile">
-    <div class="goal-header">
-      <div>
-        <div class="goal-title">&#127919; $1M Networth Goal</div>
-        <div class="goal-sub" style="margin-top:4px;">
-          ${fmt(lastNW)} of ${fmt(TARGET)} &nbsp;·&nbsp; ${fmt(TARGET-lastNW)} to go
-          &nbsp;·&nbsp; observed MOM: <span style="color:var(--muted)">${(wMOM*100).toFixed(2)}%</span>
-          <span style="color:var(--muted2);margin-left:4px;">(inflated by early low-base months — not used for projection)</span>
-        </div>
-      </div>
-      <div class="goal-pct">${pct.toFixed(1)}%</div>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" style="width:${pct.toFixed(1)}%"></div>
-    </div>
-    <div class="goal-sub" style="margin-bottom:16px;margin-top:6px;">
-      Projection uses: <strong style="color:var(--text)">annuity formula</strong>
-      &nbsp;·&nbsp; PMT (monthly savings) = ${fmt(Math.round(avgSave))}/mo
-      <span style="color:var(--muted2)">(avg of last 12 months · updates dynamically)</span>
-    </div>
-    <div class="goal-scenarios">
-      ${scenarios.map(scenarioHTML).join('')}
-    </div>
-  </div>`;
-}"""
+  let weightedSum = 0;
+  let totalWeight = 0;
 
-new_goal_render = """// Global state for selected scenario
+  vals.forEach((v,i)=>{
+    const age = vals.length - 1 - i;
+    const weight = Math.pow(decay, age);
+
+    weightedSum += v * weight;
+    totalWeight += weight;
+  });
+
+  const rate = weightedSum / totalWeight;
+
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+
+  const variance = vals.reduce((s,v)=>{
+    return s + Math.pow(v-avg,2);
+  },0)/vals.length;
+
+  return {
+    rate,
+    stdDev:Math.sqrt(variance)
+  };
+}
+
+function addMonths(lastRow, months){
+
+  const startMonth = MONTH_NAMES.indexOf(lastRow.month);
+
+  const total = startMonth + months;
+
+  return {
+    month:MONTH_NAMES[total % 12],
+    year:lastRow.year + Math.floor(total / 12)
+  };
+}
+
+function monthsToTargetAnnuity(
+  current,
+  annualRate,
+  monthlyContribution,
+  target=1000000
+){
+
+  if(current >= target){
+    return 0;
+  }
+
+  const monthlyRate = annualRate / 12;
+
+  let balance = current;
+
+  for(let month=1; month<=1200; month++){
+
+    balance = balance * (1 + monthlyRate) + monthlyContribution;
+
+    if(balance >= target){
+      return month;
+    }
+  }
+
+  return null;
+}
+
 let selectedScenario = 'realistic';
 
-function renderGoalTile() {
-  const tile = document.getElementById('goalTile');
-  if(!allRows.length){ tile.innerHTML=''; return; }
+const allRows = [
+  { month:'January', year:2024, networth:267000, save:5000, mom:4.1 },
+  { month:'February', year:2024, networth:278000, save:5200, mom:3.8 },
+  { month:'March', year:2024, networth:289000, save:5300, mom:4.0 },
+  { month:'April', year:2024, networth:301000, save:5500, mom:4.2 }
+];
 
-  const TARGET  = 1000000;
-  const lastNW  = allRows[allRows.length-1].networth;
-  const pct     = Math.min((lastNW/TARGET)*100, 100);
+function renderGoalTile(){
+
+  const TARGET = 1000000;
+
   const lastRow = allRows[allRows.length-1];
 
-  // Dynamic PMT: avg of last 12 months SAVE (updates as more data added)
+  const lastNW = lastRow.networth;
+
+  const pct = Math.min(lastNW / TARGET * 100, 100);
+
+  document.getElementById('goalPercent').textContent =
+    pct.toFixed(1) + '%';
+
+  const { rate:wMOM } = computeWeightedMOM(allRows);
+
+  document.getElementById('goalSub').innerHTML = `
+    ${fmt(lastNW)} of ${fmt(TARGET)}
+    · ${fmt(TARGET-lastNW)} remaining
+    · observed MOM:
+    <span style="color:white">${(wMOM*100).toFixed(2)}%</span>
+  `;
+
+  document.getElementById('goalFill').style.width =
+    pct + '%';
+
+  const track = document.getElementById('goalTrack');
+
+  track.querySelectorAll('.milestone-mark').forEach(e=>e.remove());
+
+  [12.5,25,37.5,50,62.5,75,87.5].forEach(p=>{
+
+    const div = document.createElement('div');
+
+    div.className =
+      'milestone-mark' + ((p % 25 === 0) ? ' major':'');
+
+    div.style.left = p + '%';
+
+    track.appendChild(div);
+  });
+
   const recent12 = allRows.slice(-12);
-  const avgSave  = recent12.reduce((s,r)=>s+r.save, 0) / recent12.length;
 
-  // Observed weighted MOM (context only)
-  const wMOM = computeWeightedMOM(allRows);
+  const avgSave =
+    recent12.reduce((s,r)=>s+r.save,0) / recent12.length;
 
-  // Annual return rates per scenario
   const scenarios = [
-    { key:'conservative', label:'Conservative', cls:'conservative',
-      annualRate:0.05, pmtFactor:0.9,
-      note:'5% annual return · markets underperform' },
-    { key:'realistic',    label:'Realistic',    cls:'realistic',
-      annualRate:0.09, pmtFactor:1.0,
-      note:'9% annual return · S&P500 long-run avg' },
-    { key:'ambitious',    label:'Ambitious',    cls:'ambitious',
-      annualRate:0.14, pmtFactor:1.1,
-      note:'14% annual return · strong bull market' },
+    {
+      key:'conservative',
+      label:'Conservative',
+      cls:'conservative',
+      annualRate:0.05,
+      pmtFactor:0.9,
+      note:'5% annual return'
+    },
+    {
+      key:'realistic',
+      label:'Realistic',
+      cls:'realistic',
+      annualRate:0.09,
+      pmtFactor:1.0,
+      note:'9% annual return'
+    },
+    {
+      key:'ambitious',
+      label:'Ambitious',
+      cls:'ambitious',
+      annualRate:0.14,
+      pmtFactor:1.1,
+      note:'14% annual return'
+    }
   ];
 
-  // Milestone markers at 12.5% intervals
-  const milestones = [12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
-  const milestonesHTML = milestones.map(p => {
-    const isMajor = p % 25 === 0; // 25%, 50%, 75%, 100%
-    return `<div class="milestone-mark ${isMajor?'major':''}" style="left:${p}%;" 
-                 title="$${(p*10).toFixed(p===12.5||p===37.5||p===62.5||p===87.5?1:0)}k"></div>`;
-  }).join('');
+  const scenarioContainer =
+    document.getElementById('scenarioContainer');
 
-  const milestoneLabels = [0, 125, 250, 375, 500, 625, 750, 875, 1000].map((v,i) => {
-    const show = i % 2 === 0 || v === 1000; // show every other + always $1M
-    return show ? `<span>$${v}k</span>` : '<span></span>';
-  }).join('');
+  scenarioContainer.innerHTML = '';
 
-  function scenarioHTML(sc) {
-    const pmt  = avgSave * sc.pmtFactor;
-    const mos  = monthsToTargetAnnuity(lastNW, sc.annualRate, pmt);
-    const isSelected = selectedScenario === sc.key;
-    
-    if(mos === 0) return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
-      <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
-      <div class="scenario-date" style="color:var(--green)">Already there!</div>
-    </div>`;
-    
-    if(!mos) return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
-      <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
-      <div class="scenario-date" style="color:var(--red)">Not reachable</div>
-      <div class="scenario-detail">Increase savings or return rate</div>
-    </div>`;
-    
-    const {month:tMo, year:tYr} = addMonths(lastRow, mos);
-    const yrs = (mos/12).toFixed(1);
-    
-    return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
-      <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
-      <div class="scenario-date">${tMo.slice(0,3)} ${tYr}</div>
-      <div class="scenario-detail">${mos} months · ${yrs} yrs away</div>
-      <div class="scenario-rate">${sc.note}<br>+ ${fmt(Math.round(pmt))}/mo savings</div>
-    </div>`;
-  }
+  scenarios.forEach(sc=>{
 
-  // Compute future milestones for selected scenario
-  const selectedSc = scenarios.find(s => s.key === selectedScenario);
-  const futureMilestones = [375000, 500000, 750000, 1000000]
-    .filter(m => m > lastNW)
-    .map(target => {
-      const pmt = avgSave * selectedSc.pmtFactor;
-      const mos = monthsToTargetAnnuity(lastNW, selectedSc.annualRate, pmt, target);
-      if(!mos) return null;
-      const {month, year} = addMonths(lastRow, mos);
-      return { value: target, month, year, months: mos };
-    })
-    .filter(Boolean);
+    const pmt = avgSave * sc.pmtFactor;
 
-  const selectedDetailsHTML = futureMilestones.length ? `
-    <div class="selected-details">
-      <div class="selected-details-title">Selected: ${selectedSc.label} Scenario — Future Milestones</div>
-      <div class="milestone-timeline">
-        ${futureMilestones.map(m => `
-          <div class="milestone-item">
-            <div class="dot"></div>
-            <span class="value">${fmt(m.value)}</span>
-            <span class="date">→ ${m.month.slice(0,3)} ${m.year}</span>
-          </div>
-        `).join('')}
+    const months = monthsToTargetAnnuity(
+      lastNW,
+      sc.annualRate,
+      pmt
+    );
+
+    const future = addMonths(lastRow, months);
+
+    const card = document.createElement('div');
+
+    card.className =
+      `scenario-card ${sc.cls} ${selectedScenario===sc.key?'selected':''}`;
+
+    card.innerHTML = `
+      <div class="scenario-label">
+        <div class="scenario-radio"></div>
+        ${sc.label}
       </div>
-    </div>` : '';
 
-  tile.innerHTML = `
-  <div class="goal-tile">
-    <div class="goal-header">
-      <div>
-        <div class="goal-title">&#127919; $1M Networth Goal</div>
-        <div class="goal-sub" style="margin-top:4px;">
-          ${fmt(lastNW)} of ${fmt(TARGET)} &nbsp;·&nbsp; ${fmt(TARGET-lastNW)} to go
-          &nbsp;·&nbsp; observed MOM: <span style="color:var(--muted)">${(wMOM*100).toFixed(2)}%</span>
-          <span style="color:var(--muted2);margin-left:4px;">(inflated by early low-base — not used)</span>
-        </div>
+      <div class="scenario-date">
+        ${future.month.slice(0,3)} ${future.year}
       </div>
-      <div class="goal-pct">${pct.toFixed(1)}%</div>
-    </div>
-    <div class="progress-track" id="goalProgressTrack">
-      <div class="progress-fill" style="width:${pct.toFixed(1)}%"></div>
-      ${milestonesHTML}
-      <div class="progress-tooltip" id="goalProgressTooltip"></div>
-    </div>
-    <div class="milestone-labels">${milestoneLabels}</div>
-    <div class="goal-sub" style="margin-bottom:16px;">
-      Projection: <strong style="color:var(--text)">annuity formula</strong>
-      &nbsp;·&nbsp; PMT = ${fmt(Math.round(avgSave))}/mo
-      <span style="color:var(--muted2)">(last 12mo avg · updates dynamically)</span>
-    </div>
-    <div class="goal-scenarios">
-      ${scenarios.map(scenarioHTML).join('')}
-    </div>
-    ${selectedDetailsHTML}
-  </div>`;
 
-  // Attach hover handlers
-  attachProgressHover();
-}
+      <div class="scenario-detail">
+        ${months} months · ${(months/12).toFixed(1)} years
+      </div>
 
-function selectScenario(key) {
-  selectedScenario = key;
-  renderGoalTile();
-}
+      <div class="scenario-rate">
+        ${sc.note}
+        <br>
+        + ${fmt(pmt)}/mo contribution
+      </div>
+    `;
 
-function attachProgressHover() {
-  const track = document.getElementById('goalProgressTrack');
-  const tooltip = document.getElementById('goalProgressTooltip');
-  if(!track || !tooltip) return;
-  
-  track.addEventListener('mousemove', (e) => {
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    const val = (pct / 100) * 1000000;
-    tooltip.textContent = fmt(val) + ' (' + pct.toFixed(1) + '%)';
-    tooltip.style.left = x + 'px';
-    tooltip.style.display = 'block';
+    card.onclick = ()=>{
+      selectedScenario = sc.key;
+      renderGoalTile();
+    };
+
+    scenarioContainer.appendChild(card);
   });
-  
-  track.addEventListener('mouseleave', () => {
+
+  const selected = scenarios.find(
+    s=>s.key===selectedScenario
+  );
+
+  const futureMilestones =
+    [375000,500000,750000,1000000]
+    .filter(v=>v>lastNW)
+    .map(target=>{
+
+      const pmt =
+        avgSave * selected.pmtFactor;
+
+      const months =
+        monthsToTargetAnnuity(
+          lastNW,
+          selected.annualRate,
+          pmt,
+          target
+        );
+
+      const date =
+        addMonths(lastRow, months);
+
+      return {
+        value:target,
+        date
+      };
+    });
+
+  document.getElementById('selectedDetails').innerHTML = `
+    <div class="selected-details">
+
+      <div class="selected-details-title">
+        ${selected.label} Scenario — Future Milestones
+      </div>
+
+      <div class="milestone-timeline">
+
+      ${futureMilestones.map(m=>`
+        <div class="milestone-item">
+          <div class="dot"></div>
+          <div class="value">${fmt(m.value)}</div>
+          <div class="date">
+            → ${m.date.month.slice(0,3)} ${m.date.year}
+          </div>
+        </div>
+      `).join('')}
+
+      </div>
+
+    </div>
+  `;
+}
+
+function attachHover(){
+
+  const track = document.getElementById('goalTrack');
+
+  const tooltip =
+    document.getElementById('goalTooltip');
+
+  track.addEventListener('mousemove',e=>{
+
+    const rect = track.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+
+    const pct = Math.max(
+      0,
+      Math.min(100,(x / rect.width) * 100)
+    );
+
+    const value = pct / 100 * 1000000;
+
+    tooltip.style.left = x + 'px';
+
+    tooltip.style.display = 'block';
+
+    tooltip.textContent =
+      `${fmt(value)} (${pct.toFixed(1)}%)`;
+  });
+
+  track.addEventListener('mouseleave',()=>{
     tooltip.style.display = 'none';
   });
-}"""
+}
 
-content = content.replace(old_goal_render, new_goal_render)
+renderGoalTile();
 
-with open('/mnt/user-data/outputs/index.html', 'w') as f:
-    f.write(content)
+attachHover();
 
-checks = ['selectedScenario','milestone-mark','progress-tooltip','attachProgressHover','selectScenario','selected-details','futureMilestones']
-print('\n'.join([f"{'✓' if c in content else '✗ MISSING'} {c}" for c in checks]))
-print(f"\nLines: {content.count(chr(10))}")
-PYEOF
-Output
-✓ selectedScenario
-✓ milestone-mark
-✓ progress-tooltip
-✓ attachProgressHover
-✓ selectScenario
-✓ selected-details
-✓ futureMilestones
+</script>
 
-Lines: 1087
+</body>
+</html>
+```
