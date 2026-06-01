@@ -94,8 +94,8 @@
   .kpi-sub2{font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);}
 
   /* Charts */
-  .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
-  .charts-row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+  .chart-full{width:100%;}
+  .charts-row-half{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;transition:border-color 0.2s;}
   .chart-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px;}
   .chart-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
@@ -160,13 +160,12 @@
   @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}.milestone-timeline{grid-template-columns:1fr;}}
   #dashboard{display:none;}
 
-  @media(max-width:1100px){.charts-row2{grid-template-columns:1fr 1fr;}}
   @media(max-width:900px){
     main{padding:16px;}
     .setup-grid{grid-template-columns:1fr 1fr;}
     .setup-grid .btn-load{grid-column:1/-1;}
     .kpi-grid{grid-template-columns:repeat(3,1fr);}
-    .charts-grid,.charts-row2{grid-template-columns:1fr;}
+    .charts-row-half{grid-template-columns:1fr;}
   }
   @media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
@@ -289,48 +288,50 @@
       <button class="range-btn active" data-range="all" onclick="setRange(this)">All</button>
     </div>
 
-    <!-- Row 1: Networth | MOM -->
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Net Worth Over Time</span>
-          <span class="chart-meta" id="networthMeta"></span>
-        </div>
-        <div class="canvas-wrap" style="height:300px"><canvas id="networthChart"></canvas></div>
+    <!-- Networth — full width -->
+    <div class="chart-card chart-full" style="margin-bottom:16px;">
+      <div class="chart-header">
+        <span class="chart-title">Net Worth Over Time</span>
+        <span class="chart-meta" id="networthMeta"></span>
       </div>
-      <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">MOM % Growth</span><span class="chart-meta">monthly</span></div>
-        <div class="canvas-wrap" style="height:300px"><canvas id="momChart"></canvas></div>
-      </div>
+      <div class="canvas-wrap" style="height:340px"><canvas id="networthChart"></canvas></div>
     </div>
 
-    <!-- Row 2: Income vs Spend | Account Balances | Portfolio Donut -->
-    <div class="charts-row2">
-      <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">Income vs. Spend</span></div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Income</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Spend</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Saved</div>
-        </div>
-        <div class="canvas-wrap" style="height:260px"><canvas id="incomeChart"></canvas></div>
+    <!-- Income vs Spend — full width -->
+    <div class="chart-card chart-full" style="margin-bottom:16px;">
+      <div class="chart-header"><span class="chart-title">Income vs. Spend</span></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Income</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Spend</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Saved</div>
       </div>
+      <div class="canvas-wrap" style="height:300px"><canvas id="incomeChart"></canvas></div>
+    </div>
+
+    <!-- Account Balances — full width -->
+    <div class="chart-card chart-full" style="margin-bottom:16px;">
+      <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running total</span></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>HYSA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>RBHD</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div>CB</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a371f7"></div>FDLTY</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div>ROTH</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#56d1ff"></div>HSA</div>
+      </div>
+      <div class="canvas-wrap" style="height:300px"><canvas id="accountChart"></canvas></div>
+    </div>
+
+    <!-- MOM % Growth | Portfolio Allocation — side by side -->
+    <div class="charts-row-half">
       <div class="chart-card">
-        <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running total</span></div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>HYSA</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>RBHD</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div>CB</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#a371f7"></div>FDLTY</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div>ROTH</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#56d1ff"></div>HSA</div>
-        </div>
-        <div class="canvas-wrap" style="height:260px"><canvas id="accountChart"></canvas></div>
+        <div class="chart-header"><span class="chart-title">MOM % Growth</span><span class="chart-meta">monthly</span></div>
+        <div class="canvas-wrap" style="height:320px"><canvas id="momChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header"><span class="chart-title">Portfolio Allocation</span><span class="chart-meta">current value</span></div>
-        <div class="canvas-wrap" style="height:200px"><canvas id="donutChart"></canvas></div>
-        <div id="donutLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+        <div class="canvas-wrap" style="height:240px"><canvas id="donutChart"></canvas></div>
+        <div id="donutLegend" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;"></div>
       </div>
     </div>
 
