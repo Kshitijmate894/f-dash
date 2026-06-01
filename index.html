@@ -17,8 +17,8 @@
     --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
     --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif;
   }
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.5;}
-  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+  body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 0%,rgba(88,166,255,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(163,113,247,0.04) 0%,transparent 60%);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.5;}
+  header{background:rgba(22,27,34,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
   .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-0.02em;}
   .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
@@ -26,6 +26,14 @@
   .status-badge.live{color:var(--green);border-color:var(--green-dim);background:var(--green-dim);}
   main{padding:28px 32px;max-width:1440px;margin:0 auto;}
 
+
+
+  /* Disc Tile */
+  .disc-tile{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px 8px 12px;margin-bottom:16px;}
+  .disc-icon{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber);flex-shrink:0;}
+  .disc-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;font-family:var(--mono);}
+  .disc-value{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--amber);}
+  .disc-pct{font-size:11px;color:var(--muted2);font-family:var(--mono);margin-left:4px;}
 
   /* Password Gate */
   .pw-gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;}
@@ -72,13 +80,13 @@
 
   /* KPI — 5 cards */
   .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
-  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px;position:relative;overflow:hidden;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.15s;}
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
   .kpi-card.green::before{background:var(--green);}.kpi-card.red::before{background:var(--red);}
   .kpi-card.purple::before{background:var(--purple);}.kpi-card.blue::before{background:var(--blue);}
   .kpi-card.amber::before{background:var(--amber);}
   .kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:500;margin-bottom:8px;}
-  .kpi-value{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-0.01em;}
+  .kpi-value{font-family:var(--mono);font-size:23px;font-weight:500;letter-spacing:-0.02em;}
   .kpi-card.green .kpi-value{color:var(--green);}.kpi-card.red .kpi-value{color:var(--red);}
   .kpi-card.purple .kpi-value{color:var(--purple);}.kpi-card.blue .kpi-value{color:var(--blue);}
   .kpi-card.amber .kpi-value{color:var(--amber);}
@@ -88,7 +96,7 @@
   /* Charts */
   .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
   .charts-row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;transition:border-color 0.2s;}
   .chart-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px;}
   .chart-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
   .chart-meta{font-size:11px;color:var(--muted2);font-family:var(--mono);}
@@ -98,22 +106,22 @@
   .canvas-wrap{position:relative;width:100%;}
 
   /* Tables */
-  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
   .table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
   .table-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
   .table-scroll{overflow-x:auto;}
   table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;}
   thead th{background:var(--card);color:var(--muted);padding:8px 12px;text-align:right;font-weight:500;font-size:11px;letter-spacing:0.04em;border-bottom:1px solid var(--border);white-space:nowrap;}
   thead th:first-child,thead th:nth-child(2){text-align:left;}
-  tbody tr{border-bottom:1px solid var(--border-light);transition:background 0.1s;}
-  tbody tr:hover{background:var(--card);}
+  tbody tr{border-bottom:1px solid var(--border-light);transition:background 0.15s;}
+  tbody tr:hover{background:rgba(88,166,255,0.04);}
   tbody td{padding:7px 12px;text-align:right;color:var(--text);white-space:nowrap;}
   tbody td:first-child{text-align:left;color:var(--muted);}
   tbody td:nth-child(2){text-align:left;}
   .pos{color:var(--green);}.neg{color:var(--red);}.amt{color:var(--text);}
 
   /* Goal Tile */
-  .goal-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:16px;}
+  .goal-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:16px;}
   .goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
   .goal-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
   .goal-pct{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--blue);}
@@ -229,6 +237,9 @@
       <span class="last-updated" id="lastUpdated"></span>
     </div>
 
+    <!-- Disc Tile -->
+    <div id="discTile" style="display:none;"></div>
+
     <!-- Key Info -->
     <div id="keyInfoTile" style="display:none;margin-bottom:16px;"></div>
 
@@ -285,11 +296,11 @@
           <span class="chart-title">Net Worth Over Time</span>
           <span class="chart-meta" id="networthMeta"></span>
         </div>
-        <div class="canvas-wrap" style="height:260px"><canvas id="networthChart"></canvas></div>
+        <div class="canvas-wrap" style="height:300px"><canvas id="networthChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header"><span class="chart-title">MOM % Growth</span><span class="chart-meta">monthly</span></div>
-        <div class="canvas-wrap" style="height:260px"><canvas id="momChart"></canvas></div>
+        <div class="canvas-wrap" style="height:300px"><canvas id="momChart"></canvas></div>
       </div>
     </div>
 
@@ -302,7 +313,7 @@
           <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Spend</div>
           <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Saved</div>
         </div>
-        <div class="canvas-wrap" style="height:220px"><canvas id="incomeChart"></canvas></div>
+        <div class="canvas-wrap" style="height:260px"><canvas id="incomeChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running total</span></div>
@@ -314,11 +325,11 @@
           <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div>ROTH</div>
           <div class="legend-item"><div class="legend-dot" style="background:#56d1ff"></div>HSA</div>
         </div>
-        <div class="canvas-wrap" style="height:220px"><canvas id="accountChart"></canvas></div>
+        <div class="canvas-wrap" style="height:260px"><canvas id="accountChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-header"><span class="chart-title">Portfolio Allocation</span><span class="chart-meta">current value</span></div>
-        <div class="canvas-wrap" style="height:180px"><canvas id="donutChart"></canvas></div>
+        <div class="canvas-wrap" style="height:200px"><canvas id="donutChart"></canvas></div>
         <div id="donutLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;"></div>
       </div>
     </div>
@@ -475,6 +486,9 @@ async function loadData(){
       networth:parseMoney(r[21]), mom:parsePct(r[22]),
     }));
 
+    // Store U1 (Disc value) — already fetched in main range A1:W300
+    window._discValue = parseMoney(rawRows[0]?.[20]);
+
     // Compute cumulative balances on full dataset
     allRows=computeCumulative(parsed);
     if(!allRows.length) throw new Error('No data found. Check sheet name and that rows start with a 4-digit year.');
@@ -540,6 +554,7 @@ function applyFilter(){
   renderTable();
   renderAnnualSummary();
   renderKeyInfo();
+  renderDiscTile();
   renderGoalTile();
 }
 
@@ -598,7 +613,7 @@ function renderCharts(){
   const labels    =getLabels(rows);
   const fullLabels=rows.map(r=>r.month+' '+r.year);
 
-  const gridC='#21262d', tickC='#6e7681', tipBg='#161b22', tipBrd='#30363d';
+  const gridC='rgba(48,54,61,0.6)', tickC='#8b949e', tipBg='#161b22', tipBrd='#30363d';
   const moneyTick=v=>'$'+(Math.abs(v)>=1000?(Math.round(v/1000))+'k':v);
   const moneyTip =v=>'$'+Math.round(v).toLocaleString();
   const pr=rows.length>24?0:2;
@@ -611,8 +626,8 @@ function renderCharts(){
         titleColor:'#e6edf3',bodyColor:'#8b949e',padding:10,callbacks:{}}
     },
     scales:{
-      x:{ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:10},maxRotation:45,autoSkip:true,maxTicksLimit:12},grid:{color:gridC}},
-      y:{ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:10}},grid:{color:gridC}}
+      x:{ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:11},maxRotation:45,autoSkip:true,maxTicksLimit:12},grid:{color:gridC,drawBorder:false}},
+      y:{ticks:{color:tickC,font:{family:"'IBM Plex Mono'",size:11},padding:6},grid:{color:gridC,drawBorder:false}}
     }
   };
 
@@ -870,6 +885,23 @@ function renderKeyInfo(){
   </div>`;
 }
 
+
+// ── Disc Tile (U1) ────────────────────────────────────────────────────────
+function renderDiscTile() {
+  const tile = document.getElementById('discTile');
+  const val  = window._discValue || 0;
+  if(!val || !allRows.length){ tile.style.display='none'; return; }
+  const lastNW = allRows[allRows.length-1].networth;
+  const pct    = lastNW > 0 ? (val/lastNW*100) : 0;
+  tile.style.display = 'inline-flex';
+  tile.innerHTML = `
+    <div class="disc-tile">
+      <div class="disc-icon"></div>
+      <span class="disc-label">Disc</span>
+      <span class="disc-value">${fmt(val)}</span>
+      <span class="disc-pct">${pct.toFixed(1)}% of networth</span>
+    </div>`;
+}
 
 // ── Goal Tile ──────────────────────────────────────────────────────────────
 //
