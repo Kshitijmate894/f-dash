@@ -569,6 +569,7 @@ function applyFilter(){
   renderKPIs();
   renderCharts();
   renderTable();
+  renderGainsChart();
   renderAnnualSummary();
   renderKeyInfo();
   renderDiscTile();
@@ -946,50 +947,66 @@ function computeYearlyGains() {
 
 function renderGainsChart() {
   destroyChart('gains');
-  const data    = computeYearlyGains();
-  const labels  = data.map(d=>d.year);
-  const gridC   = 'rgba(48,54,61,0.6)', tickC='#8b949e';
-  const tipBg   = '#161b22', tipBrd='#30363d';
-  const moneyTick = v => (v>=0?'':'-')+'$'+(Math.abs(v)>=1000?Math.round(Math.abs(v)/1000)+'k':Math.abs(v));
-  const moneyTip  = v => (v>=0?'+':'-')+'$'+Math.abs(Math.round(v)).toLocaleString();
+  const canvas = document.getElementById('gainsChart');
+  if(!canvas || !allRows.length) return;
 
-  charts['gains'] = new Chart(document.getElementById('gainsChart').getContext('2d'), {
-    type:'bar',
+  const data = computeYearlyGains();
+  if(!data.length) return;
+
+  // If cumIncSave column is missing (all zero), show a note and bail gracefully
+  const hasColX = data.some(d => d.incSave !== 0);
+
+  const gridC  = 'rgba(48,54,61,0.6)', tickC = '#8b949e';
+  const tipBg  = '#161b22', tipBrd = '#30363d';
+  const moneyTick = v => {
+    const abs = Math.abs(v);
+    return (v < 0 ? '-' : '') + '$' + (abs >= 1000 ? Math.round(abs/1000) + 'k' : abs);
+  };
+  const moneyFmt = v => (v >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(v)).toLocaleString();
+
+  const incData = data.map(d => d.incSave);
+  const invData = data.map(d => d.invReturn);
+  const totData = data.map(d => d.totalGain);
+  const invColors  = invData.map(v => v >= 0 ? 'rgba(63,185,80,0.80)'  : 'rgba(248,81,73,0.80)');
+  const invBorders = invData.map(v => v >= 0 ? '#3fb950' : '#f85149');
+
+  charts['gains'] = new Chart(canvas.getContext('2d'), {
     data:{
-      labels,
+      labels: data.map(d => d.year),
       datasets:[
         {
+          type:'bar',
           label:'Income Savings',
-          data: data.map(d=>d.incSave),
-          backgroundColor:'rgba(88,166,255,0.75)',
+          data: incData,
+          backgroundColor:'rgba(88,166,255,0.78)',
           borderColor:'#58a6ff',
-          borderWidth:1,
+          borderWidth:1.5,
           borderRadius:5,
           order:2,
         },
         {
+          type:'bar',
           label:'Investment Returns',
-          data: data.map(d=>d.invReturn),
-          backgroundColor: data.map(d=>d.invReturn>=0?'rgba(63,185,80,0.75)':'rgba(248,81,73,0.75)'),
-          borderColor:     data.map(d=>d.invReturn>=0?'#3fb950':'#f85149'),
-          borderWidth:1,
+          data: invData,
+          backgroundColor: invColors,
+          borderColor: invBorders,
+          borderWidth:1.5,
           borderRadius:5,
           order:2,
         },
         {
-          // Total networth change overlay line
-          label:'Total Change',
-          data: data.map(d=>d.totalGain),
           type:'line',
+          label:'Total NW Change',
+          data: totData,
           borderColor:'rgba(163,113,247,0.9)',
           backgroundColor:'transparent',
-          borderWidth:2,
+          borderWidth:2.5,
           borderDash:[5,4],
-          pointRadius:5,
           pointBackgroundColor:'#a371f7',
           pointBorderColor:'#0d1117',
           pointBorderWidth:2,
-          pointHoverRadius:7,
+          pointRadius:6,
+          pointHoverRadius:8,
           tension:0.3,
           order:1,
         }
@@ -998,7 +1015,7 @@ function renderGainsChart() {
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
+      interaction:{mode:'index', intersect:false},
       plugins:{
         legend:{display:false},
         tooltip:{
@@ -1011,35 +1028,53 @@ function renderGainsChart() {
           callbacks:{
             title: ctx => ctx[0].label + ' — Annual Breakdown',
             label: ctx => {
-              if(ctx.dataset.label==='Income Savings')    return '  Income Savings:      '+moneyTip(ctx.raw);
-              if(ctx.dataset.label==='Investment Returns') return '  Investment Returns:  '+moneyTip(ctx.raw);
-              if(ctx.dataset.label==='Total Change')       return '  Total NW Change:     '+moneyTip(ctx.raw);
+              const v = ctx.raw;
+              if(ctx.dataset.label==='Income Savings')
+                return '  💼 Income Savings:      ' + moneyFmt(v);
+              if(ctx.dataset.label==='Investment Returns')
+                return '  📈 Investment Returns:  ' + moneyFmt(v);
+              if(ctx.dataset.label==='Total NW Change')
+                return '  ∑  Total NW Change:     ' + moneyFmt(v);
               return '';
             },
             afterBody: ctx => {
-              const d = data[ctx[0].dataIndex];
-              const total = d.totalGain;
-              if(!total) return [];
-              const incPct = (d.incSave/total*100).toFixed(1);
-              const invPct = (d.invReturn/total*100).toFixed(1);
-              return ['', `  Income share: ${incPct}%   Investments: ${invPct}%`];
+              const d    = data[ctx[0].dataIndex];
+              const tot  = d.totalGain;
+              if(!tot || !hasColX) return hasColX ? [] : ['','  ⚠ Column X not found — income split unavailable'];
+              const iPct = Math.round(d.incSave   / tot * 100);
+              const vPct = Math.round(d.invReturn / tot * 100);
+              return ['', `  Income ${iPct}%  ·  Investments ${vPct}%`];
             }
           }
         }
       },
       scales:{
         x:{
-          ticks:{color:tickC, font:{family:"'IBM Plex Mono'",size:12}, maxRotation:0},
+          ticks:{color:tickC, font:{family:"'IBM Plex Mono'", size:12}, maxRotation:0},
           grid:{color:gridC, drawBorder:false}
         },
         y:{
-          ticks:{color:tickC, font:{family:"'IBM Plex Mono'",size:11}, padding:6, callback:moneyTick},
+          ticks:{color:tickC, font:{family:"'IBM Plex Mono'", size:11}, padding:6, callback:moneyTick},
           grid:{color:gridC, drawBorder:false}
         }
       }
     }
   });
+
+  // If column X is missing, overlay a warning on the canvas
+  if(!hasColX) {
+    const ctx2 = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx2.fillStyle = 'rgba(210,153,34,0.15)';
+    ctx2.fillRect(0, 0, W, H);
+    ctx2.fillStyle = '#d29922';
+    ctx2.font = "14px 'IBM Plex Mono'";
+    ctx2.textAlign = 'center';
+    ctx2.fillText('Column X (cumulative income save) not found in sheet', W/2, H/2 - 12);
+    ctx2.fillText('Income vs Investment split unavailable', W/2, H/2 + 16);
+  }
 }
+
 
 // ── Goal Tile ──────────────────────────────────────────────────────────────
 //
