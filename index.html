@@ -322,6 +322,22 @@
       <div class="canvas-wrap" style="height:300px"><canvas id="accountChart"></canvas></div>
     </div>
 
+    <!-- Income Savings vs Investment Returns by Year — full width -->
+    <div class="chart-card chart-full" style="margin-bottom:16px;">
+      <div class="chart-header">
+        <div>
+          <span class="chart-title">Income Savings vs. Investment Returns</span>
+          <span class="chart-meta" style="margin-left:12px;">annual breakdown</span>
+        </div>
+        <div class="chart-legend" style="margin:0;">
+          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>Income Savings</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Investment Returns</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(163,113,247,0.6);border-radius:0;height:2px;width:16px;margin:0;"></div>Total Change</div>
+        </div>
+      </div>
+      <div class="canvas-wrap" style="height:300px"><canvas id="gainsChart"></canvas></div>
+    </div>
+
     <!-- MOM % Growth | Portfolio Allocation — side by side -->
     <div class="charts-row-half">
       <div class="chart-card">
@@ -459,7 +475,7 @@ async function loadData(){
   btn.disabled=true; btn.textContent='Loading…';
   showMsg('Connecting to Google Sheets…','');
 
-  const url   =`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!A1:W300')}?key=${apiKey}`;
+  const url   =`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!A1:X300')}?key=${apiKey}`;
   const keyUrl=`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!AF4:AJ18')}?key=${apiKey}`;
 
   try{
@@ -484,7 +500,7 @@ async function loadData(){
       roth:parseMoney(r[14]), hsa:parseMoney(r[15]),
       rent:parseMoney(r[16]), carloan:parseMoney(r[17]),
       spend:parseMoney(r[18]),save:parseMoney(r[19]),
-      networth:parseMoney(r[21]), mom:parsePct(r[22]),
+      networth:parseMoney(r[21]), mom:parsePct(r[22]), cumIncSave:parseMoney(r[23]),
     }));
 
     // Store U1 (Disc value) — already fetched in main range A1:W300
@@ -902,6 +918,127 @@ function renderDiscTile() {
       <span class="disc-value">${fmt(val)}</span>
       <span class="disc-pct">${pct.toFixed(1)}% of networth</span>
     </div>`;
+}
+
+// ── Income Savings vs Investment Returns ──────────────────────────────────
+function computeYearlyGains() {
+  const years = [...new Set(allRows.map(r=>r.year))].sort();
+  return years.map((yr, i) => {
+    const yRows   = allRows.filter(r=>r.year===yr);
+    const last    = yRows[yRows.length-1];
+
+    // Previous year's final row
+    const prevYears = i > 0 ? allRows.filter(r=>r.year===years[i-1]) : [];
+    const prev      = prevYears.length ? prevYears[prevYears.length-1] : null;
+
+    // Income savings = change in cumulative income save (col X) year over year
+    const incSave = last.cumIncSave - (prev ? prev.cumIncSave : 0);
+
+    // Total networth change for the year
+    const totalGain = last.networth - (prev ? prev.networth : 0);
+
+    // Investment returns = what's left after income savings
+    const invReturn = totalGain - incSave;
+
+    return { year:yr, incSave, invReturn, totalGain };
+  });
+}
+
+function renderGainsChart() {
+  destroyChart('gains');
+  const data    = computeYearlyGains();
+  const labels  = data.map(d=>d.year);
+  const gridC   = 'rgba(48,54,61,0.6)', tickC='#8b949e';
+  const tipBg   = '#161b22', tipBrd='#30363d';
+  const moneyTick = v => (v>=0?'':'-')+'$'+(Math.abs(v)>=1000?Math.round(Math.abs(v)/1000)+'k':Math.abs(v));
+  const moneyTip  = v => (v>=0?'+':'-')+'$'+Math.abs(Math.round(v)).toLocaleString();
+
+  charts['gains'] = new Chart(document.getElementById('gainsChart').getContext('2d'), {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'Income Savings',
+          data: data.map(d=>d.incSave),
+          backgroundColor:'rgba(88,166,255,0.75)',
+          borderColor:'#58a6ff',
+          borderWidth:1,
+          borderRadius:5,
+          order:2,
+        },
+        {
+          label:'Investment Returns',
+          data: data.map(d=>d.invReturn),
+          backgroundColor: data.map(d=>d.invReturn>=0?'rgba(63,185,80,0.75)':'rgba(248,81,73,0.75)'),
+          borderColor:     data.map(d=>d.invReturn>=0?'#3fb950':'#f85149'),
+          borderWidth:1,
+          borderRadius:5,
+          order:2,
+        },
+        {
+          // Total networth change overlay line
+          label:'Total Change',
+          data: data.map(d=>d.totalGain),
+          type:'line',
+          borderColor:'rgba(163,113,247,0.9)',
+          backgroundColor:'transparent',
+          borderWidth:2,
+          borderDash:[5,4],
+          pointRadius:5,
+          pointBackgroundColor:'#a371f7',
+          pointBorderColor:'#0d1117',
+          pointBorderWidth:2,
+          pointHoverRadius:7,
+          tension:0.3,
+          order:1,
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:tipBg,
+          borderColor:tipBrd,
+          borderWidth:1,
+          titleColor:'#e6edf3',
+          bodyColor:'#8b949e',
+          padding:12,
+          callbacks:{
+            title: ctx => ctx[0].label + ' — Annual Breakdown',
+            label: ctx => {
+              if(ctx.dataset.label==='Income Savings')    return '  Income Savings:      '+moneyTip(ctx.raw);
+              if(ctx.dataset.label==='Investment Returns') return '  Investment Returns:  '+moneyTip(ctx.raw);
+              if(ctx.dataset.label==='Total Change')       return '  Total NW Change:     '+moneyTip(ctx.raw);
+              return '';
+            },
+            afterBody: ctx => {
+              const d = data[ctx[0].dataIndex];
+              const total = d.totalGain;
+              if(!total) return [];
+              const incPct = (d.incSave/total*100).toFixed(1);
+              const invPct = (d.invReturn/total*100).toFixed(1);
+              return ['', `  Income share: ${incPct}%   Investments: ${invPct}%`];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:tickC, font:{family:"'IBM Plex Mono'",size:12}, maxRotation:0},
+          grid:{color:gridC, drawBorder:false}
+        },
+        y:{
+          ticks:{color:tickC, font:{family:"'IBM Plex Mono'",size:11}, padding:6, callback:moneyTick},
+          grid:{color:gridC, drawBorder:false}
+        }
+      }
+    }
+  });
 }
 
 // ── Goal Tile ──────────────────────────────────────────────────────────────
