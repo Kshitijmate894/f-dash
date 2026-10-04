@@ -17,16 +17,14 @@
     --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
     --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif;
   }
-  body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 0%,rgba(88,166,255,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(163,113,247,0.04) 0%,transparent 60%);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.5;}
+  body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 0%,rgba(88,166,255,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(163,113,247,0.04) 0%,transparent 60%);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.5;overflow-x:hidden;}
   header{background:rgba(22,27,34,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
   .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-0.02em;}
   .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
   .status-badge{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px;background:var(--card);border:1px solid var(--border);color:var(--muted);}
   .status-badge.live{color:var(--green);border-color:var(--green-dim);background:var(--green-dim);}
-  main{padding:28px 32px;max-width:1440px;margin:0 auto;}
-
-
+  main{padding:28px 32px;max-width:1440px;margin:0 auto;min-width:0;}
 
   /* Disc Tile */
   .disc-tile{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px 8px 12px;margin-bottom:16px;}
@@ -64,6 +62,7 @@
   /* Message */
   .message{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center;color:var(--muted);font-size:13px;margin-bottom:24px;}
   .message.error{border-color:var(--red-dim);background:var(--red-dim);color:var(--red);}
+  .message.warn{border-color:rgba(210,153,34,0.4);background:rgba(210,153,34,0.1);color:var(--amber);text-align:left;font-family:var(--mono);font-size:12px;}
 
   /* Filters */
   .controls-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
@@ -79,8 +78,8 @@
   .range-btn.active{background:rgba(88,166,255,0.12);border-color:var(--blue);color:var(--blue);font-weight:500;}
 
   /* KPI — 5 cards */
-  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
-  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.15s;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:24px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.15s;min-width:0;}
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
   .kpi-card.green::before{background:var(--green);}.kpi-card.red::before{background:var(--red);}
   .kpi-card.purple::before{background:var(--purple);}.kpi-card.blue::before{background:var(--blue);}
@@ -95,21 +94,21 @@
 
   /* Charts */
   .chart-full{width:100%;}
-  .charts-row-half{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;transition:border-color 0.2s;}
+  .charts-row-half{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;transition:border-color 0.2s;min-width:0;}
   .chart-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px;}
   .chart-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
   .chart-meta{font-size:11px;color:var(--muted2);font-family:var(--mono);}
   .chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
   .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-family:var(--mono);}
   .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
-  .canvas-wrap{position:relative;width:100%;}
+  .canvas-wrap{position:relative;width:100%;min-width:0;}
 
   /* Tables */
-  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;min-width:0;}
   .table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
   .table-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
-  .table-scroll{overflow-x:auto;}
+  .table-scroll{overflow-x:auto;max-width:100%;}
   table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;}
   thead th{background:var(--card);color:var(--muted);padding:8px 12px;text-align:right;font-weight:500;font-size:11px;letter-spacing:0.04em;border-bottom:1px solid var(--border);white-space:nowrap;}
   thead th:first-child,thead th:nth-child(2){text-align:left;}
@@ -126,7 +125,7 @@
   .goal-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
   .goal-pct{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--blue);}
   .goal-sub{font-size:11px;color:var(--muted2);font-family:var(--mono);}
-  
+
   /* Progress bar with milestones and hover */
   .progress-track{position:relative;width:100%;height:10px;background:var(--card);border-radius:99px;margin-bottom:6px;cursor:pointer;}
   .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#58a6ff,#a371f7);transition:width 0.8s ease;pointer-events:none;}
@@ -134,7 +133,7 @@
   .milestone-mark.major{width:2px;background:rgba(110,118,129,0.5);}
   .progress-tooltip{position:absolute;top:-38px;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:6px 12px;border-radius:5px;font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.3);min-width:100px;}
   .milestone-labels{display:flex;justify-content:space-between;margin-bottom:16px;font-size:10px;color:var(--muted2);font-family:var(--mono);}
-  
+
   /* Scenario cards - clickable */
   .goal-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;}
   .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.15s;}
@@ -154,20 +153,18 @@
   .scenario-date{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px;}
   .scenario-detail{font-size:11px;color:var(--muted2);font-family:var(--mono);line-height:1.7;}
   .scenario-rate{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-  
-  /* Selected scenario details */
-  
-  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}.milestone-timeline{grid-template-columns:1fr;}}
+
+  @media(max-width:600px){.goal-scenarios{grid-template-columns:1fr;}}
   #dashboard{display:none;}
 
   @media(max-width:900px){
     main{padding:16px;}
     .setup-grid{grid-template-columns:1fr 1fr;}
     .setup-grid .btn-load{grid-column:1/-1;}
-    .kpi-grid{grid-template-columns:repeat(3,1fr);}
-    .charts-row-half{grid-template-columns:1fr;}
+    .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .charts-row-half{grid-template-columns:minmax(0,1fr);}
   }
-  @media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 </style>
 </head>
 <body>
@@ -310,12 +307,13 @@
 
     <!-- Account Balances — full width -->
     <div class="chart-card chart-full" style="margin-bottom:16px;">
-      <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running total</span></div>
+      <div class="chart-header"><span class="chart-title">Account Balances</span><span class="chart-meta">running total (net of withdrawals)</span></div>
       <div class="chart-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>HYSA</div>
         <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>RBHD</div>
         <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div>CB</div>
         <div class="legend-item"><div class="legend-dot" style="background:#a371f7"></div>FDLTY</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff9f43"></div>T-BILL</div>
         <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div>ROTH</div>
         <div class="legend-item"><div class="legend-dot" style="background:#56d1ff"></div>HSA</div>
       </div>
@@ -375,7 +373,7 @@
         <table>
           <thead><tr>
             <th>Year</th><th>Month</th><th>Income</th><th>Spend</th><th>Saved</th>
-            <th>HYSA</th><th>RBHD</th><th>CB</th><th>FDLTY</th>
+            <th>HYSA</th><th>RBHD</th><th>CB</th><th>FDLTY</th><th>T-BILL</th>
             <th>ROTH IRA</th><th>HSA</th><th>Rent</th><th>Car Loan</th>
             <th>Networth</th><th>MOM%</th>
           </tr></thead>
@@ -404,19 +402,100 @@ const fmt    = n => isNaN(n)?'—':'$'+Math.abs(n).toLocaleString('en-US',{maxim
 const fmtNet = n => isNaN(n)?'—':(n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
 const fmtPct = n => (!isFinite(n)||isNaN(n))?'—':(n>=0?'+':'')+n.toFixed(2)+'%';
 const fmtRate= n => (!isFinite(n)||isNaN(n))?'—':n.toFixed(1)+'%';
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const destroyChart = id => { if(charts[id]){charts[id].destroy();delete charts[id];} };
+
+// ── Column mapping (by header name, so inserting columns never breaks us) ──
+// Fallback positions = current sheet layout, used only if a header isn't found:
+// A Year, B Month, C TINC, D INC1, E INC2, F TEXP, G/H HYSA, I/J RBHD, K/L CB,
+// M/N FDLTY, O/P T-BILL, Q/R ROTH IRA, S/T HSA, U Rent, V Car Loan, W SPEND,
+// X SAVE, Y Disc, Z Networth, AA MOM, AB Cumulative Income Save
+const DEFAULT_COLS = {
+  year:0, month:1, tinc:2, inc1:3, inc2:4, texp:5,
+  hysa:6, hysa_wd:7, rbhd:8, rbhd_wd:9, cb:10, cb_wd:11, fdlty:12, fdlty_wd:13,
+  tbill:14, tbill_wd:15, roth:16, roth_wd:17, hsa:18, hsa_wd:19,
+  rent:20, carloan:21, spend:22, save:23, disc:24, networth:25, mom:26, cumIncSave:27
+};
+const KEYINFO_FALLBACK_START = 35; // column AJ
+const KEYINFO_WIDTH = 5;
+const KEYINFO_ROWS  = 15;
+
+const norm = s => String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+
+function classifyHeader(h){
+  if(!h) return null;
+  if(h==='year') return 'year';
+  if(h==='month') return 'month';
+  if(/^(tinc|totalinc)/.test(h)) return 'tinc';
+  if(h==='inc1') return 'inc1';
+  if(h==='inc2') return 'inc2';
+  if(/^(texp|totalexp)/.test(h)) return 'texp';
+  if(h==='hysa') return 'hysa';
+  if(h==='rbhd') return 'rbhd';
+  if(h==='cb') return 'cb';
+  if(h==='fdlty') return 'fdlty';
+  if(/^tbills?$/.test(h)) return 'tbill';
+  if(/^roth/.test(h)) return 'roth';
+  if(h==='hsa') return 'hsa';
+  if(h==='rent') return 'rent';
+  if(/^car/.test(h)) return 'carloan';
+  if(h==='spend') return 'spend';
+  if(/cumul|incomesave|cumincsave/.test(h)) return 'cumIncSave';
+  if(h==='save'||h==='saved'||h==='savings') return 'save';
+  if(h==='disc') return 'disc';
+  if(h==='networth'||h==='nw') return 'networth';
+  if(/mom|nwchange/.test(h)) return 'mom';
+  return null;
+}
+
+function buildColMap(hdr){
+  const map={}; let lastBase=null;
+  (hdr||[]).forEach((cell,i)=>{
+    const h=norm(cell); if(!h) return;
+    let key=null;
+    if(h==='wd'||/^withdraw/.test(h)){            // generic "WD" → belongs to the column before it
+      if(lastBase) key=lastBase+'_wd';
+    } else if(h.length>2 && h.endsWith('wd') && classifyHeader(h.slice(0,-2))){
+      key=classifyHeader(h.slice(0,-2))+'_wd';     // "HYSA WD", "T-BILL WD", etc.
+    } else {
+      key=classifyHeader(h);
+      if(key) lastBase=key;
+    }
+    if(key && !(key in map)) map[key]=i;           // first occurrence wins
+  });
+  // Disc often has a blank header (value lives in row 1) → sits right after SAVE
+  if(!('disc' in map) && ('save' in map)) map.disc=map.save+1;
+
+  const mainKeys=Object.keys(map);
+  const lastIdx=mainKeys.length?Math.max(...mainKeys.map(k=>map[k])):-1;
+
+  const fallbacks=[];
+  Object.keys(DEFAULT_COLS).forEach(k=>{
+    if(!(k in map)){ map[k]=DEFAULT_COLS[k]; fallbacks.push(k); }
+  });
+
+  // Key Info block = first non-empty header cell to the right of the data block
+  let keyStart=-1;
+  for(let i=lastIdx+1;i<(hdr||[]).length;i++){
+    if(norm(hdr[i])){ keyStart=i; break; }
+  }
+  if(keyStart<0) keyStart=KEYINFO_FALLBACK_START;
+
+  return {map,fallbacks,keyStart};
+}
 
 // ── Cumulative balances (computed once on all data) ────────────────────────
 function computeCumulative(rows) {
-  let h=0,r=0,c=0,f=0,ro=0,hs=0;
+  let h=0,r=0,c=0,f=0,t=0,ro=0,hs=0;
   return rows.map(row=>{
     h += row.hysa  - row.hysa_wd;
     r += row.rbhd  - row.rbhd_wd;
     c += row.cb    - row.cb_wd;
     f += row.fdlty - row.fdlty_wd;
-    ro+= row.roth;
-    hs+= row.hsa;
-    return{...row,cumHYSA:h,cumRBHD:r,cumCB:c,cumFDLTY:f,cumROTH:ro,cumHSA:hs};
+    t += row.tbill - row.tbill_wd;
+    ro+= row.roth  - row.roth_wd;
+    hs+= row.hsa   - row.hsa_wd;
+    return{...row,cumHYSA:h,cumRBHD:r,cumCB:c,cumFDLTY:f,cumTBILL:t,cumROTH:ro,cumHSA:hs};
   });
 }
 
@@ -475,36 +554,46 @@ async function loadData(){
   btn.disabled=true; btn.textContent='Loading…';
   showMsg('Connecting to Google Sheets…','');
 
-  const url   =`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!A1:X300')}?key=${apiKey}`;
-  const keyUrl=`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!AF4:AJ18')}?key=${apiKey}`;
+  // One wide fetch (A–AZ) covers the data block AND the Key Info table, wherever it sits
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName+'!A1:AZ300')}?key=${apiKey}`;
 
   try{
-    const[res,kRes]=await Promise.all([fetch(url),fetch(keyUrl)]);
-    const json=await res.json(); const kJson=await kRes.json();
+    const res=await fetch(url);
+    const json=await res.json();
     if(json.error) throw new Error(json.error.message||'API error');
 
-    window._keyInfoRows=kJson.values||[];
     const rawRows=json.values||[];
     let hIdx=rawRows.findIndex(r=>r[0]==='Year'&&r[1]==='Month');
     if(hIdx<0) hIdx=3;
 
-    const dataRows=rawRows.slice(hIdx+1).filter(r=>r[0]&&r[1]&&/^\d{4}$/.test(String(r[0])));
+    const {map:C,fallbacks,keyStart}=buildColMap(rawRows[hIdx]||[]);
+    window._colMap=C;
+    console.log('[FinDash] column map',C,'| fallbacks:',fallbacks,'| key info starts at col index',keyStart);
+
+    // Key Info table: 5 columns × 15 rows starting at the header row
+    window._keyInfoRows=rawRows.slice(hIdx,hIdx+KEYINFO_ROWS).map(r=>{
+      const out=[]; for(let i=0;i<KEYINFO_WIDTH;i++) out.push((r&&r[keyStart+i])||''); return out;
+    });
+
+    const dataRows=rawRows.slice(hIdx+1).filter(r=>r[C.year]&&r[C.month]&&/^\d{4}$/.test(String(r[C.year])));
+    const g=(r,k)=>parseMoney(r[C[k]]);
     const parsed=dataRows.map(r=>({
-      year:String(r[0]||''), month:String(r[1]||''),
-      tinc:parseMoney(r[2]),  inc1:parseMoney(r[3]),   inc2:parseMoney(r[4]),
-      texp:parseMoney(r[5]),
-      hysa:parseMoney(r[6]),  hysa_wd:parseMoney(r[7]),
-      rbhd:parseMoney(r[8]),  rbhd_wd:parseMoney(r[9]),
-      cb:parseMoney(r[10]),   cb_wd:parseMoney(r[11]),
-      fdlty:parseMoney(r[12]),fdlty_wd:parseMoney(r[13]),
-      roth:parseMoney(r[14]), hsa:parseMoney(r[15]),
-      rent:parseMoney(r[16]), carloan:parseMoney(r[17]),
-      spend:parseMoney(r[18]),save:parseMoney(r[19]),
-      networth:parseMoney(r[21]), mom:parsePct(r[22]), cumIncSave:parseMoney(r[23]),
+      year:String(r[C.year]||''), month:String(r[C.month]||''),
+      tinc:g(r,'tinc'), inc1:g(r,'inc1'), inc2:g(r,'inc2'), texp:g(r,'texp'),
+      hysa:g(r,'hysa'),   hysa_wd:g(r,'hysa_wd'),
+      rbhd:g(r,'rbhd'),   rbhd_wd:g(r,'rbhd_wd'),
+      cb:g(r,'cb'),       cb_wd:g(r,'cb_wd'),
+      fdlty:g(r,'fdlty'), fdlty_wd:g(r,'fdlty_wd'),
+      tbill:g(r,'tbill'), tbill_wd:g(r,'tbill_wd'),
+      roth:g(r,'roth'),   roth_wd:g(r,'roth_wd'),
+      hsa:g(r,'hsa'),     hsa_wd:g(r,'hsa_wd'),
+      rent:g(r,'rent'),   carloan:g(r,'carloan'),
+      spend:g(r,'spend'), save:g(r,'save'),
+      networth:g(r,'networth'), mom:parsePct(r[C.mom]), cumIncSave:g(r,'cumIncSave'),
     }));
 
-    // Store U1 (Disc value) — already fetched in main range A1:W300
-    window._discValue = parseMoney(rawRows[0]?.[20]);
+    // Disc value lives in row 1 of its column
+    window._discValue = parseMoney(rawRows[0]?.[C.disc]);
 
     // Compute cumulative balances on full dataset
     allRows=computeCumulative(parsed);
@@ -520,7 +609,11 @@ async function loadData(){
     activeTableYear=years[years.length-1];
     buildTableYearFilter(years);
 
-    showMsg('','');
+    // Warn (non-blocking) if any column had to use its fallback position
+    const critical=fallbacks.filter(k=>['tinc','spend','save','networth','mom','tbill','tbill_wd','roth_wd','hsa_wd'].includes(k));
+    if(critical.length) showMsg('Could not find header(s) for: '+critical.join(', ')+' — using default column positions. Check row 4 headers if numbers look wrong.','warn');
+    else showMsg('','');
+
     document.getElementById('dashboard').style.display='block';
     document.getElementById('statusBadge').textContent='CONNECTED';
     document.getElementById('statusBadge').className='status-badge live';
@@ -756,19 +849,20 @@ function renderCharts(){
     }
   });
 
-  // ── 4. Account Balances — running cumulative total ─────────────────────
+  // ── 4. Account Balances — running cumulative total (net of withdrawals) ─
   // cumHYSA etc. are pre-computed all-time running totals stored on each row.
   // Slicing rows by range shows the correct balance at each month in that range.
   destroyChart('acct');
   charts['acct']=new Chart(document.getElementById('accountChart').getContext('2d'),{
     type:'line',
     data:{labels, datasets:[
-      {label:'HYSA',    data:rows.map(r=>r.cumHYSA), borderColor:'#3fb950',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'RBHD',    data:rows.map(r=>r.cumRBHD), borderColor:'#58a6ff',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'CB',      data:rows.map(r=>r.cumCB),   borderColor:'#d29922',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'FDLTY',   data:rows.map(r=>r.cumFDLTY),borderColor:'#a371f7',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'ROTH IRA',data:rows.map(r=>r.cumROTH), borderColor:'#39d353',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
-      {label:'HSA',     data:rows.map(r=>r.cumHSA),  borderColor:'#56d1ff',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'HYSA',    data:rows.map(r=>r.cumHYSA),  borderColor:'#3fb950',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'RBHD',    data:rows.map(r=>r.cumRBHD),  borderColor:'#58a6ff',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'CB',      data:rows.map(r=>r.cumCB),    borderColor:'#d29922',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'FDLTY',   data:rows.map(r=>r.cumFDLTY), borderColor:'#a371f7',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'T-BILL',  data:rows.map(r=>r.cumTBILL), borderColor:'#ff9f43',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'ROTH IRA',data:rows.map(r=>r.cumROTH),  borderColor:'#39d353',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
+      {label:'HSA',     data:rows.map(r=>r.cumHSA),   borderColor:'#56d1ff',borderWidth:1.5,pointRadius:0,pointHoverRadius:5,fill:false,tension:0.3},
     ]},
     options:{
       ...JSON.parse(JSON.stringify(baseOpts)),
@@ -804,11 +898,11 @@ function renderCharts(){
     });
     document.getElementById('donutLegend').innerHTML=portfolio.map((p,i)=>
       `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>
-       <span style="color:var(--text)">${p.name}</span>
+       <span style="color:var(--text)">${esc(p.name)}</span>
        <span style="color:var(--muted2);margin-left:4px;">${(p.value/total*100).toFixed(0)}%</span></div>`
     ).join('');
   } else {
-    document.getElementById('donutLegend').innerHTML='<span style="font-size:11px;color:var(--muted2);">No portfolio data found in AF4:AJ18</span>';
+    document.getElementById('donutLegend').innerHTML='<span style="font-size:11px;color:var(--muted2);">No portfolio data found in the Key Info table</span>';
   }
 }
 
@@ -862,6 +956,7 @@ function renderTable(){
   document.getElementById('tableBody').innerHTML=[...src].reverse().map(r=>{
     const momC=r.mom>0?'pos':r.mom<0?'neg':'';
     const hn=r.hysa-r.hysa_wd, rn=r.rbhd-r.rbhd_wd, cn=r.cb-r.cb_wd, fn=r.fdlty-r.fdlty_wd;
+    const tn=r.tbill-r.tbill_wd, ron=r.roth-r.roth_wd, hsn=r.hsa-r.hsa_wd;
     return`<tr>
       <td>${r.year}</td><td>${r.month}</td>
       <td class="amt">${fmt(r.tinc)}</td>
@@ -871,7 +966,9 @@ function renderTable(){
       <td class="${rn<0?'neg':''}">${fmtNet(rn)}</td>
       <td class="${cn<0?'neg':''}">${fmtNet(cn)}</td>
       <td class="${fn<0?'neg':''}">${fmtNet(fn)}</td>
-      <td>${fmt(r.roth)}</td><td>${fmt(r.hsa)}</td>
+      <td class="${tn<0?'neg':''}">${fmtNet(tn)}</td>
+      <td class="${ron<0?'neg':''}">${fmtNet(ron)}</td>
+      <td class="${hsn<0?'neg':''}">${fmtNet(hsn)}</td>
       <td>${fmt(r.rent)}</td><td>${fmt(r.carloan)}</td>
       <td class="amt">${fmt(r.networth)}</td>
       <td class="${momC}">${fmtPct(r.mom)}</td>
@@ -884,27 +981,26 @@ function renderKeyInfo(){
   const tile=document.getElementById('keyInfoTile');
   const rows=window._keyInfoRows||[];
   if(!rows.length||activeYear!=='all'){tile.style.display='none';return;}
-  const tableRows=rows.map(r=>r.map(c=>(c||'').trim())).filter(r=>r.some(c=>c!==''));
+  const tableRows=rows.map(r=>r.map(c=>String(c||'').trim())).filter(r=>r.some(c=>c!==''));
   if(!tableRows.length){tile.style.display='none';return;}
   const html=tableRows.map((cells,i)=>{
     const tag=i===0?'th':'td';
     const s=i===0
       ?'background:var(--card);color:var(--muted);font-size:11px;font-weight:500;padding:8px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;'
       :'padding:7px 14px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-light);white-space:nowrap;';
-    return`<tr>${cells.map(c=>`<${tag} style="${s}">${c}</${tag}>`).join('')}</tr>`;
+    return`<tr>${cells.map(c=>`<${tag} style="${s}">${esc(c)}</${tag}>`).join('')}</tr>`;
   }).join('');
   tile.style.display='block';
   tile.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Key Info</span>
-      <span style="font-size:11px;color:var(--muted2);font-family:var(--mono);">AF4:AJ18</span>
     </div>
     <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);">${html}</table></div>
   </div>`;
 }
 
 
-// ── Disc Tile (U1) ────────────────────────────────────────────────────────
+// ── Disc Tile ─────────────────────────────────────────────────────────────
 function renderDiscTile() {
   const tile = document.getElementById('discTile');
   const val  = window._discValue || 0;
@@ -932,7 +1028,7 @@ function computeYearlyGains() {
     const prevYears = i > 0 ? allRows.filter(r=>r.year===years[i-1]) : [];
     const prev      = prevYears.length ? prevYears[prevYears.length-1] : null;
 
-    // Income savings = change in cumulative income save (col X) year over year
+    // Income savings = change in cumulative income save year over year
     const incSave = last.cumIncSave - (prev ? prev.cumIncSave : 0);
 
     // Total networth change for the year
@@ -1040,7 +1136,7 @@ function renderGainsChart() {
             afterBody: ctx => {
               const d    = data[ctx[0].dataIndex];
               const tot  = d.totalGain;
-              if(!tot || !hasColX) return hasColX ? [] : ['','  ⚠ Column X not found — income split unavailable'];
+              if(!tot || !hasColX) return hasColX ? [] : ['','  ⚠ Cumulative income save column not found — income split unavailable'];
               const iPct = Math.round(d.incSave   / tot * 100);
               const vPct = Math.round(d.invReturn / tot * 100);
               return ['', `  Income ${iPct}%  ·  Investments ${vPct}%`];
@@ -1061,7 +1157,7 @@ function renderGainsChart() {
     }
   });
 
-  // If column X is missing, overlay a warning on the canvas
+  // If the cumulative income save column is missing, overlay a warning on the canvas
   if(!hasColX) {
     const ctx2 = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
@@ -1070,7 +1166,7 @@ function renderGainsChart() {
     ctx2.fillStyle = '#d29922';
     ctx2.font = "14px 'IBM Plex Mono'";
     ctx2.textAlign = 'center';
-    ctx2.fillText('Column X (cumulative income save) not found in sheet', W/2, H/2 - 12);
+    ctx2.fillText('Cumulative income save column not found in sheet', W/2, H/2 - 12);
     ctx2.fillText('Income vs Investment split unavailable', W/2, H/2 + 16);
   }
 }
@@ -1096,9 +1192,6 @@ function renderGainsChart() {
 //   Conservative : 5%  (underperforming markets / flat period)
 //   Realistic    : 9%  (close to S&P500 long-run avg, suits VOO-heavy portfolio)
 //   Ambitious    : 14% (strong bull market / crypto upside)
-//
-// Monthly savings (PMT) is dynamic: avg of last 12 months SAVE column.
-// As you add more data, the PMT updates automatically.
 
 function addMonths(lastRow, n) {
   const mIdx   = MONTH_NAMES.indexOf(lastRow.month);
@@ -1112,12 +1205,9 @@ function monthsToTargetAnnuity(pv, annualRate, pmt, target=1000000) {
   if(pv >= target) return 0;
   const r = annualRate / 12;          // monthly rate
   if(r <= 0) {
-    // No return — pure savings
     return pmt > 0 ? Math.ceil((target - pv) / pmt) : null;
   }
   // Solve: target = pv*(1+r)^n + pmt*((1+r)^n - 1)/r
-  // Let x = (1+r)^n  →  target = (pv + pmt/r)*x - pmt/r
-  // x = (target + pmt/r) / (pv + pmt/r)
   const x = (target + pmt/r) / (pv + pmt/r);
   if(x <= 1) return null; // never reaches target at this rate
   return Math.ceil(Math.log(x) / Math.log(1 + r));
@@ -1156,7 +1246,6 @@ function renderGoalTile() {
   // Observed weighted MOM (context only)
   const wMOM = computeWeightedMOM(allRows);
 
-  // Annual return rates per scenario
   const scenarios = [
     { key:'conservative', label:'Conservative', cls:'conservative',
       annualRate:0.05, pmtFactor:0.9,
@@ -1173,7 +1262,7 @@ function renderGoalTile() {
   const milestones = [12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
   const milestonesHTML = milestones.map(p => {
     const isMajor = p % 25 === 0; // 25%, 50%, 75%, 100%
-    return `<div class="milestone-mark ${isMajor?'major':''}" style="left:${p}%;" 
+    return `<div class="milestone-mark ${isMajor?'major':''}" style="left:${p}%;"
                  title="$${(p*10).toFixed(p===12.5||p===37.5||p===62.5||p===87.5?1:0)}k"></div>`;
   }).join('');
 
@@ -1186,21 +1275,21 @@ function renderGoalTile() {
     const pmt  = avgSave * sc.pmtFactor;
     const mos  = monthsToTargetAnnuity(lastNW, sc.annualRate, pmt);
     const isSelected = selectedScenario === sc.key;
-    
+
     if(mos === 0) return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
       <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
       <div class="scenario-date" style="color:var(--green)">Already there!</div>
     </div>`;
-    
+
     if(!mos) return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
       <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
       <div class="scenario-date" style="color:var(--red)">Not reachable</div>
       <div class="scenario-detail">Increase savings or return rate</div>
     </div>`;
-    
+
     const {month:tMo, year:tYr} = addMonths(lastRow, mos);
     const yrs = (mos/12).toFixed(1);
-    
+
     return `<div class="scenario-card ${sc.cls} ${isSelected?'selected':''}" onclick="selectScenario('${sc.key}')">
       <div class="scenario-label"><div class="scenario-radio"></div>${sc.label}</div>
       <div class="scenario-date">${tMo.slice(0,3)} ${tYr}</div>
@@ -1208,8 +1297,6 @@ function renderGoalTile() {
       <div class="scenario-rate">${sc.note}<br>+ ${fmt(Math.round(pmt))}/mo savings</div>
     </div>`;
   }
-
-  const selectedSc = scenarios.find(s => s.key === selectedScenario);
 
   tile.innerHTML = `
   <div class="goal-tile">
