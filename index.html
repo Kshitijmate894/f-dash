@@ -416,7 +416,7 @@ const DEFAULT_COLS = {
   tbill:14, tbill_wd:15, roth:16, roth_wd:17, hsa:18, hsa_wd:19,
   rent:20, carloan:21, spend:22, save:23, disc:24, networth:25, mom:26, cumIncSave:27
 };
-const KEYINFO_FALLBACK_START = 35; // column AJ
+const KEYINFO_START = 35; // column AJ (A=0 … Z=25, AA=26 … AJ=35); bucket names live here
 const KEYINFO_WIDTH = 5;
 const KEYINFO_ROWS  = 15;
 
@@ -474,12 +474,8 @@ function buildColMap(hdr){
     if(!(k in map)){ map[k]=DEFAULT_COLS[k]; fallbacks.push(k); }
   });
 
-  // Key Info block = first non-empty header cell to the right of the data block
-  let keyStart=-1;
-  for(let i=lastIdx+1;i<(hdr||[]).length;i++){
-    if(norm(hdr[i])){ keyStart=i; break; }
-  }
-  if(keyStart<0) keyStart=KEYINFO_FALLBACK_START;
+  // Key Info block: fixed start column (AJ = bucket names). Change KEYINFO_START if it moves again.
+  const keyStart=KEYINFO_START;
 
   return {map,fallbacks,keyStart};
 }
